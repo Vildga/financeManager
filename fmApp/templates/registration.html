@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registration Form</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="login_form">
+    <!-- Registration form container -->
+    <form action="{% url 'register' %}" method="post">
+      {% csrf_token %}
+      <h3>Sign up</h3>
+
+      <!-- Username input box -->
+      <div class="input_box">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required />
+      </div>
+
+      <!-- Email input box -->
+      <div class="input_box">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email address" required />
+      </div>
+
+      <!-- Password input box -->
+      <div class="input_box">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+      </div>
+
+      <!-- Confirm Password input box -->
+      <div class="input_box">
+        <label for="password2">Confirm Password</label>
+        <input type="password" id="password2" name="password2" placeholder="Confirm your password" required />
+      </div>
+
+      <!-- Sign up button -->
+      <button type="submit">Sign Up</button>
+
+      <p class="sign_up">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </form>
+  </div>
+</body>
+</html>

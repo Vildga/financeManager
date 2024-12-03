@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
   web:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,6 +17,8 @@ services:
       - db
 
   db:
+    env_file:
+      - .env
     image: postgres:14-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/

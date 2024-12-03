@@ -43,13 +43,12 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.last_login = timezone.now()
+            user.set_password(form.cleaned_data['password'])
             user.save()
             login(request, user)
-            return HttpResponseRedirect(reverse('profile', args=[user.username]))
+            return redirect('home')
     else:
         form = RegistrationForm()
-
     return render(request, 'registration.html', {'form': form})
 
 
