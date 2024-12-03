@@ -15,7 +15,7 @@ def home(request):
 def user_login(request):
     if request.user.is_authenticated:
         messages.success(request, 'Ви вже увійшли до системи.')
-        return redirect('')
+        return redirect('home')
 
     if request.method == 'POST':
         form = AuthenticationForm(request, request.POST)
