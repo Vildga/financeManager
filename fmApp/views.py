@@ -6,10 +6,23 @@ from .forms import RegistrationForm
 from django.utils import timezone
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from .forms import TableForm
+from .models import Table
 
 
 def home(request):
-    return render(request, 'home.html')
+    tables = Table.objects.filter(user=request.user)
+    if request.method == 'POST':
+        form = TableForm(request.POST)
+        if form.is_valid():
+            table = form.save(commit=False)
+            table.user = request.user
+            table.save()
+            return redirect('home')
+    else:
+        form = TableForm()
+
+    return render(request, 'home.html', {'tables': tables, 'form': form})
 
 
 def user_login(request):
@@ -50,6 +63,21 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'registration.html', {'form': form})
+
+
+@login_required
+def add_table(request):
+    if request.method == 'POST':
+        form = TableForm(request.POST)
+        if form.is_valid():
+            table = form.save(commit=False)
+            table.user = request.user
+            table.save()
+            return redirect('home')  # Перенаправление на главную страницу или другую нужную
+    else:
+        form = TableForm()
+
+    return render(request, 'tracker/add_table.html', {'form': form})
 
 
 @login_required

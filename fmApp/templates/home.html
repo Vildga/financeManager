@@ -3,5 +3,44 @@
 {% block title %}Finance Manager{% endblock %}
 
 {% block content %}
-    <h1> TEST </h1>
+<div class="container">
+    <h1 class="mb-4">Your Tables</h1>
+    
+    <!-- Кнопка для открытия модального окна -->
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tableModal">+ Create Table</button>
+
+    <!-- Список существующих таблиц -->
+    <div class="mt-4">
+        <h3>Your Tables</h3>
+        <ul class="list-group">
+            {% for table in tables %}
+                <li class="list-group-item">
+                    <strong>{{ table.name }}</strong><br>
+                    <em>{{ table.description }}</em>
+                </li>
+            {% empty %}
+                <li class="list-group-item">You have no tables yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Модальное окно для создания таблицы -->
+    <div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tableModalLabel">Create a New Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Create Table</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

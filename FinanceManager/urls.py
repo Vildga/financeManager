@@ -27,6 +27,7 @@ urlpatterns = [
     path('social-auth/', include('social_django.urls', namespace='social')),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register, name='register'),
+    path('add_table/', views.add_table, name='add_table'),
 ]
 
 if settings.DEBUG:
