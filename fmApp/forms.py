@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Table
+from .models import Table, Category
 
 
 class RegistrationForm(forms.ModelForm):
@@ -23,3 +23,12 @@ class TableForm(forms.ModelForm):
     class Meta:
         model = Table
         fields = ['name', 'description']
+
+
+class TransactionForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.SelectDateWidget())
+    amount = forms.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        model = Category
+        fields = ['date', 'type', 'amount']

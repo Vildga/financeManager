@@ -1,0 +1,175 @@
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #626cd6;
+  color: white;
+  padding: 15px;
+  font-size: 1.2em;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.card-body {
+  background-color: #ffffff;
+  padding: 20px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Table styling */
+.table {
+  margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.table th, .table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  background-color: #f4f7fb;
+  font-weight: bold;
+}
+
+.table td {
+  background-color: #ffffff;
+}
+
+/* Graph layout */
+.graph-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.graph-container canvas {
+  width: 48%;
+  height: 200px;
+}
+
+/* Modal and button styling */
+.modal-header {
+  background-color: #626cd6;
+  color: white;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.btn-light {
+  background-color: #f1f3f5;
+  color: #626cd6;
+  border-radius: 5px;
+  border: 1px solid #4d57b6;
+  padding: 8px 15px;
+  transition: all 0.3s ease;
+}
+
+.btn-light:hover {
+  background-color: #626cd6;
+  color: white;
+}
+
+/* Button on the main screen */
+.btn-add-transaction {
+  background-color: #52b35a;
+  color: white;
+  border-radius: 5px;
+  padding: 10px 15px;
+  display: inline-block;
+  font-size: 1.1em;
+  text-align: center;
+    margin-top: 10px;
+}
+
+.btn-add-transaction:hover {
+  background-color: #218838;
+  color: white;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .graph-container {
+    flex-direction: column;
+  }
+
+  .graph-container canvas {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .table th, .table td {
+    font-size: 0.8em;
+    padding: 8px;
+  }
+
+  .card-body {
+    padding: 10px;
+  }}
+
+.category-item {
+    margin-bottom: 10px; /* Регулируйте значение по вашему усмотрению */
+}
+
+.text-center {
+    text-align: center;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center; /* Выравнивание по центру */
+    gap: 10px; /* Пространство между кнопками */
+}
+
+.btn {
+    width: 200px; /* Установите фиксированную ширину для кнопок */
+    padding: 10px 20px; /* Равные отступы для всех кнопок */
+    text-align: center; /* Выравнивание текста по центру */
+}
+
+.btn-success {
+    background-color: #28a745;  /* Зеленый цвет */
+    border-color: #28a745;      /* Зеленый цвет */
+}
+
+.btn-success:hover {
+    background-color: #218838;  /* Темно-зеленый при наведении */
+    border-color: #1e7e34;      /* Темно-зеленый при наведении */
+}
+
+/* Уменьшаем размер кнопки Delete */
+.btn-sm {
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 0.8rem;  /* Уменьшаем шрифт */
+    width: auto; /* Убираем фиксированную ширину */
+    text-align: center; /* Центрируем текст */
+}
+
+#success-message {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 9999; /* Чтобы сообщение всегда было поверх других элементов */
+    width: auto;
+    max-width: 300px; /* Ограничение по ширине */
+    padding: 10px 20px;
+    font-size: 14px; /* Маленький шрифт */
+    border-radius: 5px; /* Скругленные углы */
+    opacity: 1;
+    transition: opacity 1s ease-out; /* Анимация исчезновения */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Легкая тень */
+}
+

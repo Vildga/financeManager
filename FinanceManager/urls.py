@@ -28,6 +28,14 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register, name='register'),
     path('add_table/', views.add_table, name='add_table'),
+    path('delete_table/', views.delete_table, name='delete_table'),
+    path('table/<int:table_id>/', views.table_detail, name='table_detail'),
+    path('table/<int:table_id>/add_transaction/', views.add_transaction, name='add_transaction'),
+    path('add-category/', views.add_category, name='add_category'),
+    path('manage-categories/<int:table_id>/', views.manage_categories, name='manage_categories'),
+    path('table/<int:table_id>/category/<int:category_id>/delete/', views.delete_category, name='delete_category'),
+    path('delete_transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
+    path('load_default_categories/<int:table_id>/', views.load_default_categories, name='load_default_categories'),
 ]
 
 if settings.DEBUG:

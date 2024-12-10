@@ -1,9 +1,7 @@
-/* header.css */
-
 /* Общие стили для шапки */
 .header {
     background-color: #626cd6; /* Основной фон в цветовой гамме */
-    padding: 15px 0;
+    padding: 10px 0;
     position: fixed;
     width: 100%;
     top: 0;
@@ -13,7 +11,7 @@
 
 /* Логотип */
 .header .logo {
-    height: 50px;
+    height: 40px;
     width: auto;
     margin-right: 10px;
     vertical-align: middle;
@@ -57,4 +55,26 @@
 .header .navigation ul li a:hover {
     background-color: #4954d0;
     color: #fff;
+}
+
+/* Контейнер с содержимым */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    height: 100%;
+    background-color: #f9f9f9;
+}
+
+/* Убираем отступы у контейнера */
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Убираем дополнительные отступы у body */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
