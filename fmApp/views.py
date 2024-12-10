@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import RegistrationForm
 from django.utils import timezone
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from .forms import TableForm
 from .models import Table
@@ -96,8 +96,15 @@ def delete_table(request):
     return redirect('home')
 
 
+@login_required
 def table_detail(request, table_id):
+    # Получаем таблицу
     table = get_object_or_404(Table, id=table_id)
+
+    # Проверяем, принадлежит ли таблица текущему пользователю
+    if table.user != request.user:
+        # Если не принадлежит, перенаправляем на главную страницу или другую страницу
+        return redirect('home')  # Замените 'home' на URL-имя вашей страницы
 
     # Получаем все транзакции для этой таблицы, сортируя по дате (по убыванию)
     transactions = Transaction.objects.filter(category__table=table).order_by('-date')
