@@ -10,54 +10,53 @@
 {% endblock %}
 
 {% block content %}
-    {% if messages %}
-        <div id="success-message" class="alert alert-success" role="alert">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
+{#    {% if messages %}#}
+{#        <div id="success-message" class="alert alert-success" role="alert">#}
+{#            {% for message in messages %}#}
+{#                <p>{{ message }}</p>#}
+{#            {% endfor %}#}
+{#        </div>#}
+{#    {% endif %}#}
     
     
-<div class="container-fluid" style="margin-top: 80px;">
-    <div class="row" style="height: 100vh;">
-        <!-- Левая колонка -->
-        <div class="col-2 d-flex flex-column">
-            <h3>Your Tables</h3>
-            <!-- Кнопка для создания новой таблицы -->
-            <button class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#tableModal">+ Create Table</button>
-
-            <!-- Список таблиц -->
-            <ul class="list-group flex-grow-1 overflow-auto">
-                {% for table in tables %}
-                    <li class="list-group-item position-relative">
-                        <!-- Ссылка на страницу с деталями таблицы -->
-                        <a href="{% url 'table_detail' table.id %}">
-                            <strong>{{ table.name }}</strong><br>
-                            <em>{{ table.description }}</em>
-                        </a>
-
-                        <!-- Кнопка для удаления таблицы -->
-                        <button class="btn btn-danger delete-btn position-absolute top-50 end-0 translate-middle-y" data-bs-toggle="modal" data-bs-target="#deleteModal" data-table-id="{{ table.id }}">Delete</button>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">You have no tables yet.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- Основной контент -->
-        <div class="col-10 d-flex justify-content-center align-items-center">
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>Welcome, {{ request.user.username }}!</h1>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 bg-light sidebar py-3">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-primary">Your Tables</h3>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tableModal">+ Create Table</button>
+{#                    <button class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#tableModal">+ Create Table</button>#}
                 </div>
-                <p>Select a table to manage your data or create a new one using the button above.</p>
-            </div>
+                <ul class="list-group list-group-flush">
+                    {% for table in tables %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{% url 'table_detail' table.id %}" class="text-decoration-none text-dark w-100">
+                                <div class="d-flex flex-column w-100">
+                                    <strong>{{ table.name }}</strong>
+                                    <p class="text-muted small mb-0">{{ table.description }}</p>
+                                </div>
+                            </a>
+                            <button class="btn btn-outline-danger delete-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-table-id="{{ table.id }}">Delete</button>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center text-muted">You have no tables yet.</li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 col-lg-10 d-flex flex-column align-items-center justify-content-center text-center">
+                <h1 class="display-5">Welcome, {{ request.user.username }}!</h1>
+                <p class="lead">Select a table to manage your data or create a new one using the button on the left.</p>
+            </main>
         </div>
     </div>
 
-    <!-- Модальное окно для подтверждения удаления -->
+    <!-- Modal for Deleting Table -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -72,52 +71,49 @@
                     <form method="post" action="{% url 'delete_table' %}">
                         {% csrf_token %}
                         <input type="hidden" id="table-id" name="table_id">
-                        <button type="submit" class="btn btn-danger">Delete</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    
-            <!-- Модальное окно для создания таблицы -->
-        <div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="tableModalLabel">Create New Table</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Форма для создания новой таблицы -->
-                        <form method="POST" action="{% url 'add_table' %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="table-name" class="form-label">Table Name</label>
-                                <input type="text" class="form-control" id="table-name" name="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="table-description" class="form-label">Description</label>
-                                <input type="text" class="form-control" id="table-description" name="description" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Table</button>
-                        </form>
-                    </div>
+
+    <!-- Modal for Creating Table -->
+    <div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tableModalLabel">Create New Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'add_table' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="table-name" class="form-label">Table Name</label>
+                            <input type="text" class="form-control" id="table-name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="table-description" class="form-label">Table Description</label>
+                            <textarea class="form-control" id="table-description" name="description" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-add-transaction w-100">Create Table</button>
+                    </form>
                 </div>
             </div>
         </div>
-
-
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Обработка кнопки удаления
-        const deleteBtns = document.querySelectorAll('.delete-btn');
-        deleteBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tableId = this.getAttribute('data-table-id');
-                document.getElementById('table-id').value = tableId;
-            });
+        const deleteModal = document.getElementById('deleteModal');
+        const tableIdInput = document.getElementById('table-id');
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; // Кнопка, которая открыла модальное окно
+            const tableId = button.getAttribute('data-table-id'); // Получаем ID таблицы
+            tableIdInput.value = tableId; // Устанавливаем значение в скрытое поле
         });
     </script>
 

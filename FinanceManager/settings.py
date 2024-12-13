@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure-9e1np49re&6av&rr*e(r$9-+z0f!)^=#^b*3gk-k4sh!g8$ph^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1"]
+# ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "46.118.6.20", "vildga.ddns.net"]
+ALLOWED_HOSTS = ["*"]
+
 
 # Application definition
 
@@ -149,3 +151,5 @@ SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET')
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+LOGIN_URL = '/login/'

@@ -13,6 +13,7 @@ from .models import Table, Category, Transaction
 from django.db.models import Sum
 
 
+@login_required
 def home(request):
     tables = Table.objects.filter(user=request.user)
     if request.method == 'POST':
@@ -30,11 +31,11 @@ def home(request):
 
 def user_login(request):
     if request.user.is_authenticated:
-        messages.success(request, 'Ви вже увійшли до системи.')
+        messages.info(request, 'You are already logged in.')
         return redirect('home')
 
     if request.method == 'POST':
-        form = AuthenticationForm(request, request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
@@ -42,15 +43,16 @@ def user_login(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('')
+                messages.success(request, 'You have successfully logged in.')
+                return redirect('home')  # Убедитесь, что маршрут 'home' существует
             else:
-                messages.error(request, 'Неправильний логін чи пароль.')
+                messages.error(request, 'Invalid username or password.')
+        else:
+            messages.error(request, 'Error in form submission. Please try again.')
     else:
         form = AuthenticationForm()
 
-    context = {
-        'form': form,
-    }
+    context = {'form': form}
     return render(request, 'login.html', context)
 
 
@@ -61,7 +63,11 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
-            login(request, user)
+
+            # Указываем бэкенд аутентификации
+            backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user, backend=backend)
+
             return redirect('home')
     else:
         form = RegistrationForm()
@@ -80,20 +86,19 @@ def add_table(request):
     else:
         form = TableForm()
 
-    return render(request, 'add_table.html', {'form': form})
 
 
 @login_required
 def delete_table(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         table_id = request.POST.get('table_id')
-        try:
-            table = Table.objects.get(id=table_id, user=request.user)
-            table.delete()
-            messages.success(request, 'Table deleted successfully!')
-        except Table.DoesNotExist:
-            messages.error(request, 'Table not found or you do not have permission to delete it.')
-    return redirect('home')
+        if not table_id:
+            return HttpResponseForbidden("Table ID is missing.")
+
+        table = get_object_or_404(Table, id=table_id, user=request.user)
+        table.delete()
+        return redirect('home')
+    return HttpResponseForbidden("Invalid request method.")
 
 
 @login_required

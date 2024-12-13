@@ -36,6 +36,9 @@ urlpatterns = [
     path('table/<int:table_id>/category/<int:category_id>/delete/', views.delete_category, name='delete_category'),
     path('delete_transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
     path('load_default_categories/<int:table_id>/', views.load_default_categories, name='load_default_categories'),
+
+
+
 ]
 
 if settings.DEBUG:
