@@ -273,3 +273,19 @@ def load_default_categories(request, table_id):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+@login_required
+def edit_transaction(request):
+    if request.method == "POST":
+        transaction_id = request.POST.get('transaction_id')
+        transaction = get_object_or_404(Transaction, id=transaction_id, category__table__user=request.user)
+
+        transaction.date = request.POST.get('date')
+        transaction.category_id = request.POST.get('category_id')
+        transaction.type = request.POST.get('type')
+        transaction.amount = request.POST.get('amount')
+        transaction.description = request.POST.get('description')
+        transaction.save()
+
+        return redirect('table_detail', table_id=transaction.category.table.id)

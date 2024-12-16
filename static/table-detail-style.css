@@ -173,3 +173,14 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Легкая тень */
 }
 
+.btn-custom-yellow {
+    background-color: #ffc107 !important; /* Основной желтый цвет */
+    border-color: #ffc107 !important; /* Цвет границы */
+    color: #fff !important; /* Цвет текста */
+    transition: background-color 0.2s, border-color 0.2s; /* Анимация при наведении */
+}
+
+.btn-custom-yellow:hover {
+    background-color: #e0a800 !important; /* Более темный оттенок при наведении */
+    border-color: #d39e00 !important;
+}
