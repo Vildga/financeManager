@@ -289,3 +289,7 @@ def edit_transaction(request):
         transaction.save()
 
         return redirect('table_detail', table_id=transaction.category.table.id)
+
+
+def about(request):
+    return render(request, 'about.html',)

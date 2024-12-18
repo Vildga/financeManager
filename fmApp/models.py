@@ -10,7 +10,7 @@ class User(AbstractUser):
 
 class Table(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название таблицы")
-    description = models.TextField(verbose_name="Описание")
+    description = models.TextField(verbose_name="Описание", blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tables")
 
     def __str__(self):

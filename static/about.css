@@ -1,0 +1,14 @@
+.card-header {
+    background: linear-gradient(90deg, #626cd6, #4d52ab) !important;
+    color: white;
+}
+
+.card-body p, .card-body ul {
+    font-size: 1.1em;
+    color: #333333;
+}
+
+.card-footer {
+    background-color: #f9f9f9;
+    color: #666666;
+}

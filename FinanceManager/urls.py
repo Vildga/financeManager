@@ -37,7 +37,7 @@ urlpatterns = [
     path('delete_transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
     path('load_default_categories/<int:table_id>/', views.load_default_categories, name='load_default_categories'),
     path('edit_transaction/', views.edit_transaction, name='edit_transaction'),
-
+    path('about/', views.about, name='about'),
 ]
 
 if settings.DEBUG:
