@@ -19,6 +19,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from fmApp import views
+# from fmApp.api_views import *
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+from fmApp import api_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,6 +45,28 @@ urlpatterns = [
     path('load_default_categories/<int:table_id>/', views.load_default_categories, name='load_default_categories'),
     path('edit_transaction/', views.edit_transaction, name='edit_transaction'),
     path('about/', views.about, name='about'),
+
+
+
+    # API URLS
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/login/', api_views.LoginAPIView.as_view(), name='api_login'),
+    path('api/tables/', api_views.get_tables, name='get_tables'),
+    path('api/tables/add/', api_views.add_table, name='add_table'),
+    path('api/tables/delete/<int:table_id>/', api_views.delete_table, name='delete_table'),
+    path('api/user/', api_views.get_user_info, name='get_user_info'),
+    path('api/tables/<int:table_id>/', api_views.table_detail_api, name='table-detail'),
+    path('api/transactions/add/<int:table_id>/', api_views.add_transaction_api, name='add-transaction'),
+    path('api/transactions/<int:transaction_id>/delete/', api_views.delete_transaction_api, name='delete_transaction_api'),
+    path('api/transactions/<int:transaction_id>/edit/', api_views.edit_transaction_api, name='edit_transaction_api'),
+    path('api/categories/<int:table_id>/', api_views.get_categories_api, name='category-list'),
+    path('api/categories/add/<int:table_id>/', api_views.add_category_api, name='add-category'),
+    path('api/categories/delete/<int:category_id>/', api_views.delete_category_api, name='delete-category'),
+    path('api/categories/load-default/<int:table_id>/', api_views.load_default_categories, name='load-default-categories'),
+    path('api/register/', api_views.register_api, name='register_api'),
+    path('api/social-login/', api_views.social_login, name='social_login'),
+
 ]
 
 if settings.DEBUG:

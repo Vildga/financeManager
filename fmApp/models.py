@@ -31,7 +31,7 @@ class Transaction(models.Model):
     date = models.DateField()
     type = models.CharField(max_length=10, choices=[('income', 'Доход'), ('expense', 'Расход')])
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField(verbose_name="Описание", max_length=30)
+    description = models.TextField(blank=True, null=True)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
 
     def __str__(self):

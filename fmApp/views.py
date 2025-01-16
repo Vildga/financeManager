@@ -87,7 +87,6 @@ def add_table(request):
         form = TableForm()
 
 
-
 @login_required
 def delete_table(request):
     if request.method == "POST":
