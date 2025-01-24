@@ -74,6 +74,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 
+
 export default defineComponent({
   name: 'AddTransactionModal',
   props: {
@@ -117,6 +118,13 @@ export default defineComponent({
       }
     };
 
+    const handleCategoriesUpdated = () => {
+      fetchCategories(); // Обновляем категории
+    };
+
+
+    onMounted(fetchCategories);
+
     // Submit the transaction
     const submitTransaction = async () => {
       try {
@@ -127,9 +135,9 @@ export default defineComponent({
           amount: form.value.amount,
           description: form.value.description,
         });
-        emit('transaction-added');
-        resetForm();
-        hide();
+        emit('transaction-added'); // Эмитим событие для обновления таблицы
+        resetForm(); // Сбрасываем форму
+        hide(); // Закрываем модальное окно
       } catch (error) {
         console.error('Failed to add transaction:', error);
       }
@@ -150,8 +158,11 @@ export default defineComponent({
     const hide = () => {
       const modalElement = document.getElementById('addTransactionModal');
       if (modalElement) {
-        const bootstrapModal = window.bootstrap.Modal.getInstance(modalElement);
-        if (bootstrapModal) bootstrapModal.hide();
+        let bootstrapModal = window.bootstrap.Modal.getInstance(modalElement);
+        if (!bootstrapModal) {
+          bootstrapModal = new window.bootstrap.Modal(modalElement);
+        }
+        bootstrapModal.hide();
       }
     };
 
@@ -165,6 +176,7 @@ export default defineComponent({
       submitTransaction,
       hide,
       filterCategories,
+      handleCategoriesUpdated,
     };
   },
 });

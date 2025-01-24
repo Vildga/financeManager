@@ -155,8 +155,16 @@
       </div>
 
       <!-- Modals -->
-      <AddTransactionModal :table_id="id" @transaction-added="fetchTableDetails" />
-      <ManageCategoriesModal :table_id="id" @categories-updated="fetchTableDetails" />
+      <AddTransactionModal
+        :table_id="id"
+        @transaction-added="fetchTableDetails"
+        @categories-updated="fetchCategories"
+      />
+      <ManageCategoriesModal
+        :table_id="id"
+        @categories-updated="fetchCategories"
+      />
+
       <EditTransactionModal
         :transaction="selectedTransaction"
         :categories="categories"

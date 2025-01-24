@@ -103,11 +103,11 @@ export default defineComponent({
     const handleRegister = async () => {
       try {
         await axiosInstance.post('/api/register/', form);
-        alert('Registration successful!');
+        // alert('Registration successful!');
         router.push('/login');
       } catch (error) {
         console.error('Registration error:', error.response?.data || error.message);
-        alert('Error: ' + (error.response?.data?.detail || 'Failed to register.'));
+        // alert('Error: ' + (error.response?.data?.detail || 'Failed to register.'));
       }
     };
 

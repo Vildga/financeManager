@@ -48,7 +48,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import axiosInstance from '@/api/axiosInstance'; // Кастомный axios
+import api from '@/services/api';
 
 import Navbar from '@/components/Navbar.vue';
 import CreateTableModal from '@/components/modals/CreateTableModal.vue';
@@ -70,15 +70,15 @@ export default defineComponent({
     // Получаем данные пользователя
     const fetchUserInfo = async () => {
       try {
-        const response = await axiosInstance.get('/api/user/');
+        const response = await api.get('api/user/');
         username.value = response.data.username;
       } catch (error) {
         console.error('Error fetching user info:', error);
         if (error.response && error.response.status === 401) {
-          alert('Your session has expired. Please log in again.');
+          // alert('Your session has expired. Please log in again.');
           window.location.href = '/login';
         } else {
-          alert('Failed to fetch user info.');
+          // alert('Failed to fetch user info.');
         }
       }
     };
@@ -86,15 +86,15 @@ export default defineComponent({
     // Получаем таблицы с API
     const fetchTables = async () => {
       try {
-        const response = await axiosInstance.get('/api/tables/');
+        const response = await api.get('api/tables/');
         tables.value = response.data;
       } catch (error) {
         console.error('Error fetching tables:', error);
         if (error.response && error.response.status === 401) {
-          alert('Your session has expired. Please log in again.');
+          // alert('Your session has expired. Please log in again.');
           window.location.href = '/login';
         } else {
-          alert('Failed to fetch tables.');
+          // alert('Failed to fetch tables.');
         }
       }
     };

@@ -60,7 +60,7 @@ export default defineComponent({
       try {
         // Отправляем запрос на удаление транзакции
         const response = await axiosInstance.delete(`/api/transactions/${props.transactionId}/delete/`);
-        console.log(response.data.message);
+        // console.log(response.data.message);
         emit('transaction-deleted');
 
         const backdrop = document.querySelector('.modal-backdrop');

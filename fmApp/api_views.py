@@ -13,6 +13,36 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+
+
+@login_required
+def google_login_success(request):
+    user = request.user
+
+    # Генерируем JWT токены
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+    refresh_token = str(refresh)
+
+    print("Access Token:", access_token)  # Отладка
+    print("Refresh Token:", refresh_token)  # Отладка
+
+    # Редиректим на Vue
+    frontend_url = 'http://localhost:5173/oauth/callback/'
+    redirect_url = f"{frontend_url}?token={access_token}&refresh={refresh_token}"
+    print("Redirect URL:", redirect_url)  # Отладка
+    return redirect(redirect_url)
+
+
+def google_login_error(request):
+    """
+    Вызывается, если при авторизации через Google возникла ошибка.
+    Можно перенаправить на Vue-страницу логина и отобразить сообщение об ошибке.
+    """
+    # Например, редиректим на страницу /login?error=google_auth_failed
+    return redirect("http://localhost:5173/login?error=google_auth_failed")
 
 
 class LoginAPIView(APIView):

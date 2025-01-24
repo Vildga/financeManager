@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 
 // Перехватываем запросы
 axiosInstance.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem('accessToken'); // Используем const
+  const token = localStorage.getItem('token'); // Используем const
 
   // Проверяем, есть ли токен
   if (token) {
@@ -40,7 +40,7 @@ axiosInstance.interceptors.response.use(
         });
 
         // Сохраняем новый access-токен
-        localStorage.setItem('accessToken', data.access);
+        localStorage.setItem('token', data.access);
 
         // Повторяем оригинальный запрос
         originalRequest.headers.Authorization = `Bearer ${data.access}`;

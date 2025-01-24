@@ -64,6 +64,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
+    "http://localhost:8000",
     # и т.д.
 ]
 
@@ -166,8 +167,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 SOCIAL_AUTH_GITHUB_KEY = env('SOCIAL_AUTH_GITHUB_KEY')
 SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET')
 
-LOGIN_REDIRECT_URL = 'http://localhost:5173/oauth/callback'
-LOGOUT_REDIRECT_URL = 'http://localhost:5173/login'
+# LOGIN_REDIRECT_URL = '/google-login-success/'
+# LOGOUT_REDIRECT_URL = '/logout-success/'
 
 LOGIN_URL = '/login/'
 
@@ -188,3 +189,10 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/google-login-success/'
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/google-login-error/'
+
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SECURE = False
+CORS_ALLOW_CREDENTIALS = True

@@ -39,7 +39,7 @@ export default defineComponent({
     // Функция создания таблицы
     const createTable = async () => {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         if (!token) {
           alert('You are not authenticated. Please log in.');
           return;

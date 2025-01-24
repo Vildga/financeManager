@@ -4,7 +4,7 @@ import AboutPage from '@/components/AboutPage.vue';
 import LoginPage from '@/components/LoginForm.vue';
 import RegisterPage from '@/components/RegisterForm.vue';
 import TableDetail from '@/components/TableDetailPage.vue';
-import OAuthCallback from '@/views/OAuthCallback.vue';
+import OAuthCallback from '@/components/OAuthCallback.vue';
 
 
 const routes = [
@@ -37,9 +37,10 @@ const routes = [
     props: true, // Добавлено props: true
   },
   {
-    path: "/oauth/callback",
-    name: "OAuthCallback",
+    path: '/oauth/callback',
+    name: 'OAuthCallback',
     component: OAuthCallback,
+    meta: {requiresAuth: false}
   }
 
 ];
@@ -51,15 +52,20 @@ const router = createRouter({
 
 // Добавляем навигационный guard
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('accessToken'); // Проверяем токен
+  const token = localStorage.getItem('token'); // Проверяем токен
+  console.log('Token in localStorage:', token); // Отладка
+  const isAuthenticated = !!token;
+
+  console.log('Is Authenticated:', isAuthenticated); // Отладка
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Если маршрут требует аутентификации, но пользователь не залогинен
     next('/login');
   } else {
-    // Если всё в порядке, продолжаем навигацию
     next();
   }
 });
+
+
+
 
 export default router;

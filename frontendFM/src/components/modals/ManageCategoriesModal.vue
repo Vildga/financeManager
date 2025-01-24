@@ -113,55 +113,51 @@ export default defineComponent({
         expenseCategories.value = categories.value.filter((cat) => cat.type === 'expense');
       } catch (error) {
         console.error('Error fetching categories:', error);
-        alert('Failed to load categories.');
+        // alert('Failed to load categories.');
       }
     };
 
     const addCategory = async () => {
-      if (!props.table_id) {
-        alert('Table ID is missing.');
-        return;
-      }
-
       try {
         await axiosInstance.post(`/api/categories/add/${props.table_id}/`, {
-          name: categoryName.value,
+          name: categoryName.valertalue,
           type: categoryType.value,
         });
-        alert('Category added successfully');
+        // alert('Category added successfully');
         fetchCategories();
-        emit('categories-updated');
-
+        emit('categories-updated'); // Эмитим событие
         categoryName.value = '';
         categoryType.value = 'income';
       } catch (error) {
-        console.error('Error adding category:', error);
-        alert('Failed to add category.');
-      }
-    };
-
-    const loadDefaultCategories = async () => {
-      try {
-        await axiosInstance.post(`/api/categories/load-default/${props.table_id}/`);
-        alert('Default categories loaded successfully');
-        fetchCategories();
-      } catch (error) {
-        console.error('Error loading default categories:', error);
-        alert('Failed to load default categories.');
+        // console.error('Error adding category:', error);
+        // alert('Failed to add category.');
       }
     };
 
     const deleteCategory = async (categoryId) => {
       try {
         await axiosInstance.delete(`/api/categories/delete/${categoryId}/`);
-        alert('Category deleted successfully');
+        // alert('Category deleted successfully');
         fetchCategories();
-        emit('categories-updated');
+        emit('categories-updated'); // Эмитим событие
       } catch (error) {
-        console.error('Error deleting category:', error);
-        alert('Failed to delete category.');
+        // console.error('Error deleting category:', error);
+        // alert('Failed to delete category.');
       }
     };
+
+    const loadDefaultCategories = async () => {
+      try {
+        await axiosInstance.post(`/api/categories/load-default/${props.table_id}/`);
+        // alert('Default categories loaded successfully');
+        fetchCategories();
+        emit('categories-updated'); // Эмитим событие
+      } catch (error) {
+        console.error('Error loading default categories:', error);
+        // alert('Failed to load default categories.');
+      }
+    };
+
 
     onMounted(fetchCategories);
 

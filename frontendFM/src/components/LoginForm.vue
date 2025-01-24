@@ -7,15 +7,12 @@
         <!-- Social login options -->
         <div class="login_option">
           <div class="option">
-            <a href="http://localhost:8000/social-auth/login/google-oauth2/" class="social-button google-button">
-              <img src="@/assets/google.png" alt="Google" />
-              <span>Google</span>
-            </a>
-          </div>
-          <div class="option">
-            <a href="http://localhost:8000/social/login/github/" class="social-button github-button">
-              <img src="@/assets/github.png" alt="GitHub" />
-              <span>GitHub</span>
+            <a
+              href="http://localhost:8000/social-auth/login/google-oauth2/"
+              class="social-button google-button w-100"
+            >
+              <img src="@/assets/google.png" alt="Google" class="google-logo me-2" />
+              <span>Sign in with Google</span>
             </a>
           </div>
         </div>
@@ -81,14 +78,14 @@ export default defineComponent({
         });
 
         // Сохраняем токены в localStorage
-        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('token', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
 
         // Перенаправляем на главную страницу
         router.push('/');
       } catch (error) {
         console.log(error)
-        alert('Invalid username or password.');
+        // alert('Invalid username or password.');
       }
     };
 

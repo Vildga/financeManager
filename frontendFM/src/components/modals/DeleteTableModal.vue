@@ -34,7 +34,7 @@ export default defineComponent({
       }
 
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('token');
         const response = await axios.delete(`http://localhost:8000/api/tables/delete/${tableId}/`, {
           headers: {
             Authorization: `Bearer ${token}`,

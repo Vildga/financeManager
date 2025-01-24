@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap';
 
-import { GSignInButton } from 'vue-google-signin-button'
+// import { GSignInButton } from 'vue-google-signin-button'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -15,6 +15,6 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
-app.use(GSignInButton)
+// app.use(GSignInButton)
 
 app.mount('#app')

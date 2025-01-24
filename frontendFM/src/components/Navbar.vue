@@ -33,15 +33,15 @@ import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
-  name: 'Navbar',
+  name: 'NavbarPage',
   setup() {
     const router = useRouter();
-    const isAuthenticated = ref(!!localStorage.getItem('accessToken'));
+    const isAuthenticated = ref(!!localStorage.getItem('token'));
 
     const handleLogout = () => {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      alert('You have been logged out.');
+      // alert('You have been logged out.');
       router.push('/login');
     };
 

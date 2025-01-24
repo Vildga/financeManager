@@ -65,7 +65,8 @@ urlpatterns = [
     path('api/categories/delete/<int:category_id>/', api_views.delete_category_api, name='delete-category'),
     path('api/categories/load-default/<int:table_id>/', api_views.load_default_categories, name='load-default-categories'),
     path('api/register/', api_views.register_api, name='register_api'),
-    path('api/social-login/', api_views.social_login, name='social_login'),
+    path('google-login-success/', api_views.google_login_success, name='google-login-success'),
+    path('google-login-error/', api_views.google_login_error, name='google-login-error'),
 
 ]
 

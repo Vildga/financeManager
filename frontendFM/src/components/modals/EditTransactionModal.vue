@@ -107,8 +107,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from 'vue';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { defineComponent, ref, watch, onMounted } from 'vue';
+import * as bootstrap from 'bootstrap';
 import axiosInstance from '@/api/axiosInstance';
 
 export default defineComponent({
@@ -124,12 +124,10 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    // Reactive transaction data
     const transactionData = ref({ ...props.transaction });
     const categories = ref(props.categories);
     const filteredCategories = ref([]);
 
-    // Filter categories based on type
     const filterCategories = () => {
       if (transactionData.value.type === 'income') {
         filteredCategories.value = categories.value.filter((cat) => cat.type === 'income');
@@ -138,7 +136,6 @@ export default defineComponent({
       }
     };
 
-    // Watch for changes in props
     watch(
       () => props.transaction,
       (newTransaction) => {
@@ -156,7 +153,6 @@ export default defineComponent({
       }
     );
 
-    // Save changes to the transaction
     const saveChanges = async () => {
       try {
         const updatedTransaction = {
@@ -168,29 +164,16 @@ export default defineComponent({
           category: transactionData.value.category,
         };
 
-        console.log('Saving changes...', updatedTransaction);
+        // console.log('Saving changes...', updatedTransaction);
 
-        // Отправляем PUT запрос
         const response = await axiosInstance.put(`/api/transactions/${transactionData.value.id}/edit/`, updatedTransaction);
 
-        console.log('Transaction updated:', response.data);
+        // console.log('Transaction updated:', response.data);
 
-        // Эмитим событие для обновления списка транзакций
         emit('transaction-updated');
 
-        // Удаляем модальный фон и сбрасываем стили
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-          backdrop.remove();
-        }
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-
-        // Закрываем модальное окно программно
         const modalElement = document.getElementById('editTransactionModal');
         if (modalElement) {
-          // Используем getOrCreateInstance вместо getInstance
           const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
           modalInstance.hide();
         }
@@ -198,6 +181,19 @@ export default defineComponent({
         console.error('Error updating transaction:', error.response?.data || error.message);
       }
     };
+
+    onMounted(() => {
+      const modalElement = document.getElementById('editTransactionModal');
+      if (modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', () => {
+          const backdrop = document.querySelector('.modal-backdrop');
+          if (backdrop) backdrop.remove();
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+    });
 
     return {
       transactionData,
