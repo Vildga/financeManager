@@ -55,7 +55,7 @@
               <label for="editTransactionCategory" class="form-label">Category</label>
               <select
                 class="form-select"
-                v-model="transactionData.category"
+                v-model="transactionData.category.id" <!-- Оновлено -->
                 id="editTransactionCategory"
                 required
               >
@@ -111,22 +111,7 @@ import { defineComponent, ref, watch, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import * as bootstrap from 'bootstrap';
 import axiosInstance from '@/api/axiosInstance';
-
-// Define Category interface
-interface Category {
-    id: number;
-    name: string;
-    type: 'income' | 'expense';
-}
-
-export interface Transaction {
-    id: number;
-    date: string;
-    category: Category;
-    type: 'income' | 'expense';
-    amount: number;
-    description?: string;
-}
+import type { Transaction, Category } from '@/models';
 
 
 export default defineComponent({
@@ -143,14 +128,13 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const transactionData = ref<Transaction>({ ...props.transaction });
-    const categories = ref<Category[]>(props.categories);  // Specify the type for categories
-    const filteredCategories = ref<Category[]>([]);  // Specify the type for filteredCategories
+    const filteredCategories = ref<Category[]>([]);
 
     const filterCategories = () => {
       if (transactionData.value.type === 'income') {
-        filteredCategories.value = categories.value.filter((cat) => cat.type === 'income');
+        filteredCategories.value = props.categories.filter((cat) => cat.type === 'income');
       } else {
-        filteredCategories.value = categories.value.filter((cat) => cat.type === 'expense');
+        filteredCategories.value = props.categories.filter((cat) => cat.type === 'expense');
       }
     };
 
@@ -165,8 +149,7 @@ export default defineComponent({
 
     watch(
       () => props.categories,
-      (newCategories) => {
-        categories.value = newCategories;
+      () => {
         filterCategories();
       }
     );
@@ -179,7 +162,7 @@ export default defineComponent({
           type: transactionData.value.type,
           amount: transactionData.value.amount,
           description: transactionData.value.description,
-          category: transactionData.value.category,
+          category_id: transactionData.value.category.id, // Передаємо лише ID категорії
         };
 
         const response = await axiosInstance.put(`/api/transactions/${transactionData.value.id}/edit/`, updatedTransaction);
@@ -219,20 +202,18 @@ export default defineComponent({
       saveChanges,
       filteredCategories,
       filterCategories,
-      resetForm,  // Return resetForm
+      resetForm,
     };
   },
 });
 </script>
 
 <style scoped>
+/* Ваші стилі тут */
 .modal-body {
   text-align: center;
 }
-</style>
 
-
-<style scoped>
 /* Custom Header Style */
 .custom-header {
   background-color: #6c63ff;

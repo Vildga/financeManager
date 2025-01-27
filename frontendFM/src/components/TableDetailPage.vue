@@ -164,12 +164,16 @@
         @categories-updated="fetchCategories"
       />
 
+    <!-- Умовне рендеринг модального вікна -->
       <EditTransactionModal
+        v-if="selectedTransaction"
         :transaction="selectedTransaction"
         :categories="categories"
         @transaction-updated="fetchTableDetails"
       />
+
       <DeleteTransactionModal
+        v-if="selectedTransactionId !== null"
         :transactionId="selectedTransactionId"
         @transaction-deleted="fetchTableDetails"
       />
@@ -178,7 +182,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted} from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import Navbar from '@/components/Navbar.vue';
 import AddTransactionModal from '@/components/modals/AddTransactionModal.vue';
@@ -186,25 +190,7 @@ import ManageCategoriesModal from '@/components/modals/ManageCategoriesModal.vue
 import EditTransactionModal from '@/components/modals/EditTransactionModal.vue';
 import DeleteTransactionModal from '@/components/modals/DeleteTransactionModal.vue';
 import Chart from 'chart.js/auto';
-
-interface Expense {
-  category__name: string;
-  total: number;
-}
-
-interface Income {
-  category__name: string;
-  total: number;
-}
-
-interface Transaction {
-  id: number;
-  date: string;
-  category: { name: string };
-  type: string;
-  amount: number;
-  description: string;
-}
+import type { TableDetailResponse, Transaction, Category, Summary } from '@/models';
 
 let expenseChartInstance: Chart | null = null;
 let incomeChartInstance: Chart | null = null;
@@ -225,10 +211,10 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const expenseSummary = ref<Expense[]>([]);
-    const incomeSummary = ref<Income[]>([]);
+    const expenseSummary = ref<Summary[]>([]);
+    const incomeSummary = ref<Summary[]>([]);
     const transactions = ref<Transaction[]>([]);
-    const categories = ref([]);
+    const categories = ref<Category[]>([]);
     const totalExpense = ref(0);
     const totalIncome = ref(0);
     const selectedTransaction = ref<Transaction | null>(null);
@@ -236,7 +222,7 @@ export default defineComponent({
 
     const fetchTableDetails = async () => {
       try {
-        const response = await axiosInstance.get(`/api/tables/${props.id}/`);
+        const response = await axiosInstance.get<TableDetailResponse>(`/api/tables/${props.id}/`);
         const data = response.data;
 
         expenseSummary.value = data.expense_summary;
@@ -254,7 +240,7 @@ export default defineComponent({
 
     const fetchCategories = async () => {
       try {
-        const response = await axiosInstance.get(`/api/tables/${props.id}/categories/`);
+        const response = await axiosInstance.get<Category[]>(`/api/tables/${props.id}/categories/`);
         categories.value = response.data;
       } catch (error) {
         console.error('Error fetching categories:', error);

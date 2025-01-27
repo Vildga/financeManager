@@ -22,9 +22,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     description = serializers.CharField(allow_blank=True, required=False)
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(), write_only=True, source='category'
+    )
 
     class Meta:
         model = Transaction
-        fields = ['id', 'date', 'category', 'type', 'amount', 'description']
-
+        fields = ['id', 'date', 'category', 'category_id', 'type', 'amount', 'description']
