@@ -1,4 +1,5 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios from 'axios';
+import type { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // Create an axios instance
 const axiosInstance = axios.create({
@@ -8,25 +9,23 @@ const axiosInstance = axios.create({
   },
 });
 
-// Intercept requests
-axiosInstance.interceptors.request.use(async (config: AxiosRequestConfig) => {
-  const token = localStorage.getItem('token'); // Use const
+// Request interceptor
+axiosInstance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  const token = localStorage.getItem('token');
 
-  // Check if the token is present
-  if (token) {
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
   return config;
 });
 
-// Intercept responses
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // If the token has expired
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -34,16 +33,15 @@ axiosInstance.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token found');
 
-        // Refresh the token
         const { data } = await axios.post('http://localhost:8000/api/token/refresh/', {
           refresh: refreshToken,
         });
 
-        // Save the new access token
         localStorage.setItem('token', data.access);
 
-        // Retry the original request
-        originalRequest.headers.Authorization = `Bearer ${data.access}`;
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${data.access}`;
+        }
         return axiosInstance(originalRequest);
       } catch (err) {
         console.error('Token refresh failed:', err);

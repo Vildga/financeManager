@@ -22,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     description = serializers.CharField(allow_blank=True, required=False)
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())  # Используем PrimaryKeyRelatedField
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
     class Meta:
         model = Transaction

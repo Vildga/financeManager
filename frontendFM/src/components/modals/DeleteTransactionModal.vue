@@ -43,7 +43,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent } from 'vue';
+import type { PropType } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import { Modal } from 'bootstrap';
 import { AxiosError } from 'axios'; // Import AxiosError type

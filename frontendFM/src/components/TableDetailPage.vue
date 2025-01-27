@@ -178,7 +178,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, PropType } from 'vue';
+import { defineComponent, ref, onMounted} from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import Navbar from '@/components/Navbar.vue';
 import AddTransactionModal from '@/components/modals/AddTransactionModal.vue';
@@ -252,6 +252,15 @@ export default defineComponent({
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/tables/${props.id}/categories/`);
+        categories.value = response.data;
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
     const setSelectedTransaction = (transaction: Transaction) => {
       selectedTransaction.value = transaction;
       selectedTransactionId.value = transaction.id;
@@ -261,8 +270,8 @@ export default defineComponent({
       if (expenseChartInstance) expenseChartInstance.destroy();
       if (incomeChartInstance) incomeChartInstance.destroy();
 
-      if (expenseSummary.value.length > 0) {
-        const expenseCtx = (document.getElementById('expenseChart') as HTMLCanvasElement)?.getContext('2d');
+      const expenseCtx = (document.getElementById('expenseChart') as HTMLCanvasElement)?.getContext('2d');
+      if (expenseCtx) {
         expenseChartInstance = new Chart(expenseCtx, {
           type: 'pie',
           data: {
@@ -278,8 +287,8 @@ export default defineComponent({
         });
       }
 
-      if (incomeSummary.value.length > 0) {
-        const incomeCtx = (document.getElementById('incomeChart') as HTMLCanvasElement)?.getContext('2d');
+      const incomeCtx = (document.getElementById('incomeChart') as HTMLCanvasElement)?.getContext('2d');
+      if (incomeCtx) {
         incomeChartInstance = new Chart(incomeCtx, {
           type: 'pie',
           data: {
@@ -306,11 +315,12 @@ export default defineComponent({
       totalExpense,
       totalIncome,
       fetchTableDetails,
+      fetchCategories,
       setSelectedTransaction,
       selectedTransaction,
       selectedTransactionId,
     };
-  },
+  }
 });
 </script>
 

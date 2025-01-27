@@ -108,30 +108,41 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, onMounted } from 'vue';
+import type { PropType } from 'vue';
 import * as bootstrap from 'bootstrap';
 import axiosInstance from '@/api/axiosInstance';
 
 // Define Category interface
 interface Category {
-  id: number;
-  name: string;
-  type: 'income' | 'expense'; // Add more types if needed
+    id: number;
+    name: string;
+    type: 'income' | 'expense';
 }
+
+export interface Transaction {
+    id: number;
+    date: string;
+    category: Category;
+    type: 'income' | 'expense';
+    amount: number;
+    description?: string;
+}
+
 
 export default defineComponent({
   name: 'EditTransactionModal',
   props: {
     transaction: {
-      type: Object,
+      type: Object as PropType<Transaction>,
       required: true,
     },
     categories: {
-      type: Array as () => Category[], // Define categories type here
+      type: Array as PropType<Category[]>,
       required: true,
     },
   },
   setup(props, { emit }) {
-    const transactionData = ref({ ...props.transaction });
+    const transactionData = ref<Transaction>({ ...props.transaction });
     const categories = ref<Category[]>(props.categories);  // Specify the type for categories
     const filteredCategories = ref<Category[]>([]);  // Specify the type for filteredCategories
 
