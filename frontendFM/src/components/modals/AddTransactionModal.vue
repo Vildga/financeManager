@@ -74,6 +74,12 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 
+// Define the type for category
+type Category = {
+  id: number;
+  name: string;
+  type: 'income' | 'expense';
+};
 
 export default defineComponent({
   name: 'AddTransactionModal',
@@ -92,8 +98,8 @@ export default defineComponent({
       description: '',
     });
 
-    const categories = ref([]);
-    const filteredCategories = ref([]);
+    const categories = ref<Category[]>([]);
+    const filteredCategories = ref<Category[]>([]);
 
     // Fetch categories from the server
     const fetchCategories = async () => {
@@ -121,7 +127,6 @@ export default defineComponent({
     const handleCategoriesUpdated = () => {
       fetchCategories(); // Обновляем категории
     };
-
 
     onMounted(fetchCategories);
 
@@ -181,6 +186,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 /* Custom Header Style */

@@ -64,8 +64,10 @@ export default defineComponent({
 
           // Закрываем модальное окно вручную
           const modalElement = document.getElementById('createTableModal');
-          const modal = bootstrap.Modal.getInstance(modalElement);
-          if (modal) modal.hide();
+          if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+          }
 
           // Сбрасываем поля формы
           tableName.value = '';
@@ -96,6 +98,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 
 <style scoped>

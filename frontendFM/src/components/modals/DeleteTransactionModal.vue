@@ -43,24 +43,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import { Modal } from 'bootstrap';
+import { AxiosError } from 'axios'; // Import AxiosError type
 
 export default defineComponent({
   name: 'DeleteTransactionModal',
   props: {
     transactionId: {
-      type: Number,
+      type: [Number, null] as PropType<number | null>, // Обновить тип для поддержки null
       required: true,
     },
   },
   setup(props, { emit }) {
     const confirmDeletion = async () => {
       try {
+        if (props.transactionId === null) {
+          console.error("Transaction ID is null");
+          return;
+        }
+
         // Отправляем запрос на удаление транзакции
         const response = await axiosInstance.delete(`/api/transactions/${props.transactionId}/delete/`);
-        // console.log(response.data.message);
         emit('transaction-deleted');
 
         const backdrop = document.querySelector('.modal-backdrop');
@@ -79,8 +84,13 @@ export default defineComponent({
           const modalInstance = Modal.getOrCreateInstance(modalElement);
           modalInstance.hide();
         }
-      } catch (error) {
-        console.error('Error deleting transaction:', error.response?.data || error.message);
+      } catch (error: unknown) {
+        // Type assertion to AxiosError
+        if (error instanceof AxiosError) {
+          console.error('Error deleting transaction:', error.response?.data || error.message);
+        } else {
+          console.error('An unexpected error occurred:', error);
+        }
       }
     };
 
@@ -90,6 +100,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 .modal-body {

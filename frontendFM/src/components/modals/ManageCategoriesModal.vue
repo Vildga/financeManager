@@ -89,6 +89,13 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 
+// Define the Category interface
+interface Category {
+  id: number;
+  name: string;
+  type: 'income' | 'expense';  // Add any other properties you expect
+}
+
 export default defineComponent({
   name: 'ManageCategoriesModal',
   props: {
@@ -98,12 +105,12 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
-    const categories = ref([]);
+    const categories = ref<Category[]>([]);
     const categoryName = ref('');
     const categoryType = ref('income');
 
-    const incomeCategories = ref([]);
-    const expenseCategories = ref([]);
+    const incomeCategories = ref<Category[]>([]);
+    const expenseCategories = ref<Category[]>([]);
 
     const fetchCategories = async () => {
       try {
@@ -113,51 +120,43 @@ export default defineComponent({
         expenseCategories.value = categories.value.filter((cat) => cat.type === 'expense');
       } catch (error) {
         console.error('Error fetching categories:', error);
-        // alert('Failed to load categories.');
       }
     };
 
     const addCategory = async () => {
       try {
         await axiosInstance.post(`/api/categories/add/${props.table_id}/`, {
-          name: categoryName.valertalue,
+          name: categoryName.value,
           type: categoryType.value,
         });
-        // alert('Category added successfully');
         fetchCategories();
-        emit('categories-updated'); // Эмитим событие
+        emit('categories-updated');
         categoryName.value = '';
         categoryType.value = 'income';
       } catch (error) {
-        // console.error('Error adding category:', error);
-        // alert('Failed to add category.');
+        console.error('Error adding category:', error);
       }
     };
 
-    const deleteCategory = async (categoryId) => {
+    const deleteCategory = async (categoryId: number) => {  // Specify type here
       try {
         await axiosInstance.delete(`/api/categories/delete/${categoryId}/`);
-        // alert('Category deleted successfully');
         fetchCategories();
-        emit('categories-updated'); // Эмитим событие
+        emit('categories-updated');
       } catch (error) {
-        // console.error('Error deleting category:', error);
-        // alert('Failed to delete category.');
+        console.error('Error deleting category:', error);
       }
     };
 
     const loadDefaultCategories = async () => {
       try {
         await axiosInstance.post(`/api/categories/load-default/${props.table_id}/`);
-        // alert('Default categories loaded successfully');
         fetchCategories();
-        emit('categories-updated'); // Эмитим событие
+        emit('categories-updated');
       } catch (error) {
         console.error('Error loading default categories:', error);
-        // alert('Failed to load default categories.');
       }
     };
-
 
     onMounted(fetchCategories);
 

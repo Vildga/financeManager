@@ -16,17 +16,17 @@
           </div>
           <ul class="list-group list-group-flush">
             <li
-              v-for="table in tables"
-              :key="table.id"
+              v-for="{description, id, name} in tables"
+              :key="id"
               class="list-group-item d-flex justify-content-between align-items-center"
             >
-              <router-link :to="'/table/' + table.id" class="text-decoration-none text-dark w-100">
+              <router-link :to="'/table/' + id" class="text-decoration-none text-dark w-100">
                 <div class="d-flex flex-column w-100">
-                  <strong>{{ table.name }}</strong>
-                  <p class="text-muted small mb-0">{{ table.description }}</p>
+                  <strong>{{ name }}</strong>
+                  <p class="text-muted small mb-0">{{ description }}</p>
                 </div>
               </router-link>
-              <button class="btn btn-outline-danger" @click="openDeleteModal(table.id)">Delete</button>
+              <button class="btn btn-outline-danger" @click="openDeleteModal(id)">Delete</button>
             </li>
             <li v-if="tables.length === 0" class="list-group-item text-center text-muted">You have no tables yet.</li>
           </ul>
@@ -48,12 +48,13 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import api from '@/services/api';
+import api from '@/services/api.ts';
+import { AxiosError } from 'axios';
 
 import Navbar from '@/components/Navbar.vue';
 import CreateTableModal from '@/components/modals/CreateTableModal.vue';
 import DeleteTableModal from '@/components/modals/DeleteTableModal.vue';
-import * as bootstrap from 'bootstrap'; // Подключаем Bootstrap JS
+import * as bootstrap from 'bootstrap';
 
 export default defineComponent({
   name: 'HomePage',
@@ -62,54 +63,42 @@ export default defineComponent({
     CreateTableModal,
     DeleteTableModal,
   },
-  setup() {
-    // Состояния
-    const tables = ref([]);
-    const username = ref('User');
+  setup: function () {
+    const tables = ref([]), username = ref('User');
 
-    // Получаем данные пользователя
     const fetchUserInfo = async () => {
       try {
         const response = await api.get('api/user/');
         username.value = response.data.username;
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching user info:', error);
-        if (error.response && error.response.status === 401) {
-          // alert('Your session has expired. Please log in again.');
+        if (error instanceof AxiosError && error.response?.status === 401) {
           window.location.href = '/login';
-        } else {
-          // alert('Failed to fetch user info.');
         }
       }
     };
 
-    // Получаем таблицы с API
     const fetchTables = async () => {
       try {
         const response = await api.get('api/tables/');
         tables.value = response.data;
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching tables:', error);
-        if (error.response && error.response.status === 401) {
-          // alert('Your session has expired. Please log in again.');
+        if (error instanceof AxiosError && error.response?.status === 401) {
           window.location.href = '/login';
-        } else {
-          // alert('Failed to fetch tables.');
         }
       }
     };
 
-    // Открытие модального окна удаления таблицы
-    const openDeleteModal = (tableId) => {
+    const openDeleteModal = (tableId: string | number) => {
       const modalElement = document.getElementById('deleteTableModal');
       if (modalElement) {
-        modalElement.setAttribute('data-table-id', tableId);
+        modalElement.setAttribute('data-table-id', String(tableId));
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
       }
     };
 
-    // При монтировании компонента
     onMounted(() => {
       fetchUserInfo();
       fetchTables();
@@ -123,6 +112,8 @@ export default defineComponent({
     };
   },
 });
+
+
 </script>
 
 <style scoped>

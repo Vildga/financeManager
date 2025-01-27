@@ -105,7 +105,7 @@ export default defineComponent({
         await axiosInstance.post('/api/register/', form);
         // alert('Registration successful!');
         router.push('/login');
-      } catch (error) {
+      } catch (error: any) {  // Type error as any
         console.error('Registration error:', error.response?.data || error.message);
         // alert('Error: ' + (error.response?.data?.detail || 'Failed to register.'));
       }
@@ -115,6 +115,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 @import '@/assets/log-reg-style.css';

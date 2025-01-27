@@ -6,7 +6,7 @@
     <!-- Main Content -->
     <div class="container py-4">
       <!-- Buttons to open modals -->
-     <div class="d-flex justify-content-center mb-4">
+      <div class="d-flex justify-content-center mb-4">
         <div class="button-container d-flex gap-3">
           <button class="btn btn-success w-25" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
             Add Transaction
@@ -16,7 +16,6 @@
           </button>
         </div>
       </div>
-
 
       <!-- Expense Summary -->
       <div class="row">
@@ -119,37 +118,37 @@
                 <th>Actions</th>
               </tr>
             </thead>
-              <tbody>
-                <tr
-                  v-for="transaction in transactions"
-                  :key="transaction.id"
-                  @click="setSelectedTransaction(transaction)"
-                >
-                  <td>{{ transaction.date }}</td>
-                  <td>{{ transaction.category.name }}</td>
-                  <td>{{ transaction.type }}</td>
-                  <td>{{ transaction.amount }}</td>
-                  <td>{{ transaction.description }}</td>
-                  <td class="text-center">
-                    <div class="d-flex justify-content-center gap-2">
-                      <button
-                        class="btn btn-outline-warning btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editTransactionModal"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        class="btn btn-outline-danger btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteTransactionModal"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+            <tbody>
+              <tr
+                v-for="transaction in transactions"
+                :key="transaction.id"
+                @click="setSelectedTransaction(transaction)"
+              >
+                <td>{{ transaction.date }}</td>
+                <td>{{ transaction.category.name }}</td>
+                <td>{{ transaction.type }}</td>
+                <td>{{ transaction.amount }}</td>
+                <td>{{ transaction.description }}</td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
+                    <button
+                      class="btn btn-outline-warning btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editTransactionModal"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteTransactionModal"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -179,7 +178,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, PropType } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import Navbar from '@/components/Navbar.vue';
 import AddTransactionModal from '@/components/modals/AddTransactionModal.vue';
@@ -188,8 +187,27 @@ import EditTransactionModal from '@/components/modals/EditTransactionModal.vue';
 import DeleteTransactionModal from '@/components/modals/DeleteTransactionModal.vue';
 import Chart from 'chart.js/auto';
 
-let expenseChartInstance = null;
-let incomeChartInstance = null;
+interface Expense {
+  category__name: string;
+  total: number;
+}
+
+interface Income {
+  category__name: string;
+  total: number;
+}
+
+interface Transaction {
+  id: number;
+  date: string;
+  category: { name: string };
+  type: string;
+  amount: number;
+  description: string;
+}
+
+let expenseChartInstance: Chart | null = null;
+let incomeChartInstance: Chart | null = null;
 
 export default defineComponent({
   name: 'TableDetail',
@@ -207,14 +225,14 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const expenseSummary = ref([]);
-    const incomeSummary = ref([]);
-    const transactions = ref([]);
+    const expenseSummary = ref<Expense[]>([]);
+    const incomeSummary = ref<Income[]>([]);
+    const transactions = ref<Transaction[]>([]);
     const categories = ref([]);
     const totalExpense = ref(0);
     const totalIncome = ref(0);
-    const selectedTransaction = ref({});
-    const selectedTransactionId = ref(null);
+    const selectedTransaction = ref<Transaction | null>(null);
+    const selectedTransactionId = ref<number | null>(null);
 
     const fetchTableDetails = async () => {
       try {
@@ -234,7 +252,7 @@ export default defineComponent({
       }
     };
 
-    const setSelectedTransaction = (transaction) => {
+    const setSelectedTransaction = (transaction: Transaction) => {
       selectedTransaction.value = transaction;
       selectedTransactionId.value = transaction.id;
     };
@@ -244,7 +262,7 @@ export default defineComponent({
       if (incomeChartInstance) incomeChartInstance.destroy();
 
       if (expenseSummary.value.length > 0) {
-        const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+        const expenseCtx = (document.getElementById('expenseChart') as HTMLCanvasElement)?.getContext('2d');
         expenseChartInstance = new Chart(expenseCtx, {
           type: 'pie',
           data: {
@@ -261,7 +279,7 @@ export default defineComponent({
       }
 
       if (incomeSummary.value.length > 0) {
-        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        const incomeCtx = (document.getElementById('incomeChart') as HTMLCanvasElement)?.getContext('2d');
         incomeChartInstance = new Chart(incomeCtx, {
           type: 'pie',
           data: {
@@ -372,5 +390,3 @@ th, td {
   justify-content: center;
 }
 </style>
-
-

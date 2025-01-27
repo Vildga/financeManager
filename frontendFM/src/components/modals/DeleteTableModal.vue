@@ -48,7 +48,6 @@ export default defineComponent({
           // Закрытие модального окна вручную
           const modalElement = document.getElementById('deleteTableModal');
           if (modalElement) {
-            const modalElement = document.getElementById('deleteTableModal');
             const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) modal.hide();
           }

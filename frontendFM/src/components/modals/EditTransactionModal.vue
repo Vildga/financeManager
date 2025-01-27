@@ -111,6 +111,13 @@ import { defineComponent, ref, watch, onMounted } from 'vue';
 import * as bootstrap from 'bootstrap';
 import axiosInstance from '@/api/axiosInstance';
 
+// Define Category interface
+interface Category {
+  id: number;
+  name: string;
+  type: 'income' | 'expense'; // Add more types if needed
+}
+
 export default defineComponent({
   name: 'EditTransactionModal',
   props: {
@@ -119,14 +126,14 @@ export default defineComponent({
       required: true,
     },
     categories: {
-      type: Array,
+      type: Array as () => Category[], // Define categories type here
       required: true,
     },
   },
   setup(props, { emit }) {
     const transactionData = ref({ ...props.transaction });
-    const categories = ref(props.categories);
-    const filteredCategories = ref([]);
+    const categories = ref<Category[]>(props.categories);  // Specify the type for categories
+    const filteredCategories = ref<Category[]>([]);  // Specify the type for filteredCategories
 
     const filterCategories = () => {
       if (transactionData.value.type === 'income') {
@@ -164,12 +171,7 @@ export default defineComponent({
           category: transactionData.value.category,
         };
 
-        // console.log('Saving changes...', updatedTransaction);
-
         const response = await axiosInstance.put(`/api/transactions/${transactionData.value.id}/edit/`, updatedTransaction);
-
-        // console.log('Transaction updated:', response.data);
-
         emit('transaction-updated');
 
         const modalElement = document.getElementById('editTransactionModal');
@@ -178,8 +180,14 @@ export default defineComponent({
           modalInstance.hide();
         }
       } catch (error) {
-        console.error('Error updating transaction:', error.response?.data || error.message);
+        if (error instanceof Error) {
+          console.error('Error updating transaction:', error.message);
+        }
       }
+    };
+
+    const resetForm = () => {
+      transactionData.value = { ...props.transaction };
     };
 
     onMounted(() => {
@@ -200,10 +208,18 @@ export default defineComponent({
       saveChanges,
       filteredCategories,
       filterCategories,
+      resetForm,  // Return resetForm
     };
   },
 });
 </script>
+
+<style scoped>
+.modal-body {
+  text-align: center;
+}
+</style>
+
 
 <style scoped>
 /* Custom Header Style */

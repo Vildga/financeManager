@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
-// Создаём экземпляр axios
+// Create an axios instance
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8000/',
   headers: {
@@ -8,11 +8,11 @@ const axiosInstance = axios.create({
   },
 });
 
-// Перехватываем запросы
-axiosInstance.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem('token'); // Используем const
+// Intercept requests
+axiosInstance.interceptors.request.use(async (config: AxiosRequestConfig) => {
+  const token = localStorage.getItem('token'); // Use const
 
-  // Проверяем, есть ли токен
+  // Check if the token is present
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,29 +20,29 @@ axiosInstance.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Перехватываем ответы
+// Intercept responses
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
     const originalRequest = error.config;
 
-    // Если токен истёк
-    if (error.response.status === 401 && !originalRequest._retry) {
+    // If the token has expired
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token found');
 
-        // Обновляем токен
+        // Refresh the token
         const { data } = await axios.post('http://localhost:8000/api/token/refresh/', {
           refresh: refreshToken,
         });
 
-        // Сохраняем новый access-токен
+        // Save the new access token
         localStorage.setItem('token', data.access);
 
-        // Повторяем оригинальный запрос
+        // Retry the original request
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
         return axiosInstance(originalRequest);
       } catch (err) {
