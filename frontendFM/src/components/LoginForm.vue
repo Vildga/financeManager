@@ -9,9 +9,9 @@
           <div class="option">
             <a
               href="http://localhost:8000/social-auth/login/google-oauth2/"
-              class="social-button google-button w-100"
+              class="social-button google-button"
             >
-              <img src="@/assets/google.png" alt="Google" class="google-logo me-2" />
+              <img src="@/assets/google.png" alt="Google" class="google-logo" />
               <span>Sign in with Google</span>
             </a>
           </div>
@@ -77,14 +77,14 @@ export default defineComponent({
           password: password.value,
         });
 
-        // Сохраняем токены в localStorage
+        // Зберігаємо токени в localStorage
         localStorage.setItem('token', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
 
-        // Перенаправляем на главную страницу
+        // Перенаправляємо на головну сторінку
         router.push('/');
       } catch (error) {
-        console.log(error)
+        console.log(error);
         // alert('Invalid username or password.');
       }
     };
@@ -100,4 +100,33 @@ export default defineComponent({
 
 <style scoped>
 @import '@/assets/log-reg-style.css';
+
+/* Google Login Button Styling */
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #757575;
+  font-size: 16px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 12px 16px;
+  width: 100%;
+  height: 50px; /* Робимо кнопку прямокутною */
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.google-button:hover {
+  background-color: #f1f1f1;
+}
+
+.google-logo {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
 </style>

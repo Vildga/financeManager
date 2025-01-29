@@ -5,22 +5,18 @@
       <form @submit.prevent="handleRegister">
         <h3>Sign up with</h3>
 
-        <!-- Social registration options -->
+        <!-- Social login options -->
         <div class="login_option">
           <div class="option">
-            <a href="http://localhost:8000/social/login/google-oauth2/" class="social-button google-button">
-              <img src="@/assets/google.png" alt="Google" />
-              <span>Google</span>
-            </a>
-          </div>
-          <div class="option">
-            <a href="http://localhost:8000/social/login/github/" class="social-button github-button">
-              <img src="@/assets/github.png" alt="GitHub" />
-              <span>GitHub</span>
+            <a
+              href="http://localhost:8000/social-auth/login/google-oauth2/"
+              class="social-button google-button"
+            >
+              <img src="@/assets/google.png" alt="Google" class="google-logo" />
+              <span>Sign up with Google</span>
             </a>
           </div>
         </div>
-
         <p class="separator"><span>or</span></p>
 
         <!-- Username field -->

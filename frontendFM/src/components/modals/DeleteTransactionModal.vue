@@ -47,13 +47,13 @@ import { defineComponent } from 'vue';
 import type { PropType } from 'vue';
 import axiosInstance from '@/api/axiosInstance';
 import { Modal } from 'bootstrap';
-import { AxiosError } from 'axios'; // Import AxiosError type
+import { AxiosError } from 'axios';
 
 export default defineComponent({
   name: 'DeleteTransactionModal',
   props: {
     transactionId: {
-      type: [Number, null] as PropType<number | null>, // Обновить тип для поддержки null
+      type: [Number, null] as PropType<number | null>,
       required: true,
     },
   },
@@ -65,10 +65,18 @@ export default defineComponent({
           return;
         }
 
-        // Отправляем запрос на удаление транзакции
+        // Відправка запиту на видалення транзакції
         const response = await axiosInstance.delete(`/api/transactions/${props.transactionId}/delete/`);
         emit('transaction-deleted');
 
+        // Закриття модального вікна
+        const modalElement = document.getElementById('deleteTransactionModal');
+        if (modalElement) {
+          const modalInstance = Modal.getOrCreateInstance(modalElement);
+          modalInstance.hide();
+        }
+
+        // Видалення backdrop, якщо потрібно
         const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) {
           backdrop.remove();
@@ -77,16 +85,7 @@ export default defineComponent({
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
-
-        // Закрываем модальное окно программно
-        const modalElement = document.getElementById('deleteTransactionModal');
-        if (modalElement) {
-          // Используем getOrCreateInstance вместо getInstance
-          const modalInstance = Modal.getOrCreateInstance(modalElement);
-          modalInstance.hide();
-        }
       } catch (error: unknown) {
-        // Type assertion to AxiosError
         if (error instanceof AxiosError) {
           console.error('Error deleting transaction:', error.response?.data || error.message);
         } else {

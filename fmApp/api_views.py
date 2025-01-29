@@ -66,6 +66,19 @@ class LoginAPIView(APIView):
             return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refreshToken")
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Відключаємо токен
+            return Response({"detail": "Logout successful"}, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_tables(request):

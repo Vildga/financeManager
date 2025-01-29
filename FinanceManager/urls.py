@@ -26,6 +26,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from fmApp import api_views
+from fmApp.views import custom_404_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,6 +53,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/login/', api_views.LoginAPIView.as_view(), name='api_login'),
+    path('api/logout/', api_views.LogoutView.as_view(), name='logout'),
     path('api/tables/', api_views.get_tables, name='get_tables'),
     path('api/tables/add/', api_views.add_table, name='add_table'),
     path('api/tables/delete/<int:table_id>/', api_views.delete_table, name='delete_table'),
@@ -69,6 +71,8 @@ urlpatterns = [
     path('google-login-error/', api_views.google_login_error, name='google-login-error'),
 
 ]
+
+handler404 = custom_404_view
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

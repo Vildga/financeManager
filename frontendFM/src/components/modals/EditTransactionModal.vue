@@ -55,7 +55,7 @@
               <label for="editTransactionCategory" class="form-label">Category</label>
               <select
                 class="form-select"
-                v-model="transactionData.category.id" <!-- Оновлено -->
+                v-model="transactionData.category.id"
                 id="editTransactionCategory"
                 required
               >

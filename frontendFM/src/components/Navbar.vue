@@ -39,7 +39,7 @@ export default defineComponent({
     const isAuthenticated = ref(!!localStorage.getItem('token'));
 
     const handleLogout = () => {
-      localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       // alert('You have been logged out.');
       router.push('/login');

@@ -5,9 +5,14 @@ import LoginPage from '@/components/LoginForm.vue';
 import RegisterPage from '@/components/RegisterForm.vue';
 import TableDetail from '@/components/TableDetailPage.vue';
 import OAuthCallback from '@/components/OAuthCallback.vue';
+import NotFound from "@/components/NotFound.vue";
 
 
 const routes = [
+  {
+    path: '/:pathMatch(.*)*',
+    component: NotFound,
+  },
   {
     path: '/',
     name: 'Home',
@@ -53,10 +58,10 @@ const router = createRouter({
 // Добавляем навигационный guard
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token'); // Проверяем токен
-  console.log('Token in localStorage:', token); // Отладка
+  // console.log('Token in localStorage:', token); // Отладка
   const isAuthenticated = !!token;
 
-  console.log('Is Authenticated:', isAuthenticated); // Отладка
+  // console.log('Is Authenticated:', isAuthenticated); // Отладка
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login');
