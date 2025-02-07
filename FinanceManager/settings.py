@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'd225485679149974afe681de90fa23743eaea652a322a566f4edb4185c7207ff'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "46.118.6.20", "vildga.ddns.net"]
 ALLOWED_HOSTS = ["*"]
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -65,7 +66,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
     "http://localhost:8000",
-    # и т.д.
 ]
 
 CORS_ALLOW_METHODS = [
@@ -167,10 +167,10 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 SOCIAL_AUTH_GITHUB_KEY = env('SOCIAL_AUTH_GITHUB_KEY')
 SOCIAL_AUTH_GITHUB_SECRET = env('SOCIAL_AUTH_GITHUB_SECRET')
 
-# LOGIN_REDIRECT_URL = '/google-login-success/'
-# LOGOUT_REDIRECT_URL = '/logout-success/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/users/login/'
 
-LOGIN_URL = '/login/'
+LOGIN_URL = '/users/login/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -190,9 +190,13 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/google-login-success/'
-SOCIAL_AUTH_LOGIN_ERROR_URL = '/google-login-error/'
+# SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/google-login-success/'
+# SOCIAL_AUTH_LOGIN_ERROR_URL = '/google-login-error/'
 
 SESSION_COOKIE_SAMESITE = None
 SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
+
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
