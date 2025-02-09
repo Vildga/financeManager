@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import RegistrationForm
+# from .forms import RegistrationForm
 from django.utils import timezone
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
@@ -29,49 +29,49 @@ def home(request):
     return render(request, 'home.html', {'tables': tables, 'form': form})
 
 
-def user_login(request):
-    if request.user.is_authenticated:
-        messages.info(request, 'You are already logged in.')
-        return redirect('home')
-
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-
-            if user is not None:
-                login(request, user)
-                messages.success(request, 'You have successfully logged in.')
-                return redirect('home')  # Убедитесь, что маршрут 'home' существует
-            else:
-                messages.error(request, 'Invalid username or password.')
-        else:
-            messages.error(request, 'Error in form submission. Please try again.')
-    else:
-        form = AuthenticationForm()
-
-    context = {'form': form}
-    return render(request, 'login.html', context)
-
-
-def register(request):
-    if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-
-            # Указываем бэкенд аутентификации
-            backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user, backend=backend)
-
-            return redirect('home')
-    else:
-        form = RegistrationForm()
-    return render(request, 'registration.html', {'form': form})
+# def user_login(request):
+#     if request.user.is_authenticated:
+#         messages.info(request, 'You are already logged in.')
+#         return redirect('home')
+#
+#     if request.method == 'POST':
+#         form = AuthenticationForm(request, data=request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data['username']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, username=username, password=password)
+#
+#             if user is not None:
+#                 login(request, user)
+#                 messages.success(request, 'You have successfully logged in.')
+#                 return redirect('home')  # Убедитесь, что маршрут 'home' существует
+#             else:
+#                 messages.error(request, 'Invalid username or password.')
+#         else:
+#             messages.error(request, 'Error in form submission. Please try again.')
+#     else:
+#         form = AuthenticationForm()
+#
+#     context = {'form': form}
+#     return render(request, 'login.html', context)
+#
+#
+# def register(request):
+#     if request.method == 'POST':
+#         form = RegistrationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.set_password(form.cleaned_data['password'])
+#             user.save()
+#
+#             # Указываем бэкенд аутентификации
+#             backend = 'django.contrib.auth.backends.ModelBackend'
+#             login(request, user, backend=backend)
+#
+#             return redirect('home')
+#     else:
+#         form = RegistrationForm()
+#     return render(request, 'registration.html', {'form': form})
 
 
 @login_required
