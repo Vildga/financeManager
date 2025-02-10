@@ -15,7 +15,7 @@ class Category(models.Model):
         EXPENSE = "expense", "Витрата"
 
     name = models.CharField(max_length=100, verbose_name="Назва категорії")
-    type = models.CharField(max_length=10, choices=TypeChoices, verbose_name="Тип категорії")
+    type = models.CharField(max_length=10, choices=TypeChoices.choices, verbose_name="Тип категорії")
 
     class Meta:
         unique_together = ('name', 'type')
@@ -29,7 +29,6 @@ class Table(models.Model):
     name = models.CharField(max_length=100, verbose_name="Назва таблиці")
     description = models.TextField(verbose_name="Опис", blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tables")
-    categories = models.ManyToManyField(Category, related_name="tables", blank=True)
 
     class Meta:
         ordering = ['name']
@@ -39,7 +38,7 @@ class Table(models.Model):
 
 
 class Transaction(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="transactions")
+    category = models.ManyToManyField(Category, related_name="transactions")
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
