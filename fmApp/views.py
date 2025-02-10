@@ -11,85 +11,45 @@ from .models import Table
 from django.shortcuts import render, get_object_or_404
 from .models import Table, Category, Transaction
 from django.db.models import Sum
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView, DetailView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
+from django.views import View
 
 
-@login_required
-def home(request):
-    tables = Table.objects.filter(user=request.user)
-    if request.method == 'POST':
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tables'] = Table.objects.filter(user=self.request.user)
+        context['form'] = TableForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
         form = TableForm(request.POST)
         if form.is_valid():
             table = form.save(commit=False)
             table.user = request.user
             table.save()
             return redirect('home')
-    else:
-        form = TableForm()
-
-    return render(request, 'home.html', {'tables': tables, 'form': form})
+        return self.get(request, *args, **kwargs)
 
 
-# def user_login(request):
-#     if request.user.is_authenticated:
-#         messages.info(request, 'You are already logged in.')
-#         return redirect('home')
-#
-#     if request.method == 'POST':
-#         form = AuthenticationForm(request, data=request.POST)
-#         if form.is_valid():
-#             username = form.cleaned_data['username']
-#             password = form.cleaned_data['password']
-#             user = authenticate(request, username=username, password=password)
-#
-#             if user is not None:
-#                 login(request, user)
-#                 messages.success(request, 'You have successfully logged in.')
-#                 return redirect('home')  # Убедитесь, что маршрут 'home' существует
-#             else:
-#                 messages.error(request, 'Invalid username or password.')
-#         else:
-#             messages.error(request, 'Error in form submission. Please try again.')
-#     else:
-#         form = AuthenticationForm()
-#
-#     context = {'form': form}
-#     return render(request, 'login.html', context)
-#
-#
-# def register(request):
-#     if request.method == 'POST':
-#         form = RegistrationForm(request.POST)
-#         if form.is_valid():
-#             user = form.save(commit=False)
-#             user.set_password(form.cleaned_data['password'])
-#             user.save()
-#
-#             # Указываем бэкенд аутентификации
-#             backend = 'django.contrib.auth.backends.ModelBackend'
-#             login(request, user, backend=backend)
-#
-#             return redirect('home')
-#     else:
-#         form = RegistrationForm()
-#     return render(request, 'registration.html', {'form': form})
+class TableCreateView(LoginRequiredMixin, CreateView):
+    model = Table
+    form_class = TableForm
+    template_name = 'add_table.html'
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
-@login_required
-def add_table(request):
-    if request.method == 'POST':
-        form = TableForm(request.POST)
-        if form.is_valid():
-            table = form.save(commit=False)
-            table.user = request.user
-            table.save()
-            return redirect('home')  # Перенаправление на главную страницу или другую нужную
-    else:
-        form = TableForm()
-
-
-@login_required
-def delete_table(request):
-    if request.method == "POST":
+class TableDeleteView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
         table_id = request.POST.get('table_id')
         if not table_id:
             return HttpResponseForbidden("Table ID is missing.")
@@ -97,72 +57,59 @@ def delete_table(request):
         table = get_object_or_404(Table, id=table_id, user=request.user)
         table.delete()
         return redirect('home')
-    return HttpResponseForbidden("Invalid request method.")
 
 
-@login_required
-def table_detail(request, table_id):
-    # Получаем таблицу
-    table = get_object_or_404(Table, id=table_id)
+class TableDetailView(LoginRequiredMixin, DetailView):
+    model = Table
+    template_name = 'table_detail.html'
+    context_object_name = 'table'
+    pk_url_kwarg = 'table_id'
 
-    # Проверяем, принадлежит ли таблица текущему пользователю
-    if table.user != request.user:
-        # Если не принадлежит, перенаправляем на главную страницу или другую страницу
-        return redirect('home')  # Замените 'home' на URL-имя вашей страницы
+    def get_object(self, queryset=None):
+        table = get_object_or_404(Table, id=self.kwargs.get('table_id'))
+        if table.user != self.request.user:
+            return redirect('home')
+        return table
 
-    # Получаем все транзакции для этой таблицы, сортируя по дате (по убыванию)
-    transactions = Transaction.objects.filter(category__table=table).order_by('-date')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        table = self.get_object()
 
-    # Агрегируем расходы по категориям
-    expense_summary = Transaction.objects.filter(
-        category__table=table,
-        type='expense'
-    ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
+        context['transactions'] = Transaction.objects.filter(
+            category__table=table
+        ).order_by('-date')
 
-    # Агрегируем доходы по категориям
-    income_summary = Transaction.objects.filter(
-        category__table=table,
-        type='income'
-    ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
+        context['expense_summary'] = Transaction.objects.filter(
+            category__table=table, type='expense'
+        ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
 
-    # Категории для выпадающего списка в форме
-    categories = Category.objects.filter(table=table)
+        context['income_summary'] = Transaction.objects.filter(
+            category__table=table, type='income'
+        ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
 
-    # Общая сумма доходов и расходов
-    total_income = Transaction.objects.filter(
-        category__table=table, type='income'
-    ).aggregate(total=Sum('amount'))['total'] or 0
+        context['categories'] = Category.objects.filter(table=table)
 
-    total_expense = Transaction.objects.filter(
-        category__table=table, type='expense'
-    ).aggregate(total=Sum('amount'))['total'] or 0
+        context['total_income'] = Transaction.objects.filter(
+            category__table=table, type='income'
+        ).aggregate(total=Sum('amount'))['total'] or 0
 
-    net_total = total_income - total_expense
+        context['total_expense'] = Transaction.objects.filter(
+            category__table=table, type='expense'
+        ).aggregate(total=Sum('amount'))['total'] or 0
 
-    context = {
-        'table': table,
-        'transactions': transactions,
-        'expense_summary': expense_summary,
-        'income_summary': income_summary,
-        'categories': categories,
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'net_total': net_total,
-    }
+        context['net_total'] = context['total_income'] - context['total_expense']
 
-    return render(request, 'table_detail.html', context)
+        return context
 
 
-def add_transaction(request, table_id):
-    table = get_object_or_404(Table, id=table_id)
-
-    if request.method == "POST":
+class AddTransactionView(LoginRequiredMixin, View):
+    def post(self, request, table_id):
+        table = get_object_or_404(Table, id=table_id)
         transaction_date = request.POST.get("date")
         transaction_type = request.POST.get("type")
         category_id = request.POST.get("category")
         amount = request.POST.get("amount")
         description = request.POST.get("description")
-
         category = get_object_or_404(Category, id=category_id)
 
         Transaction.objects.create(
@@ -173,125 +120,122 @@ def add_transaction(request, table_id):
             description=description,
             table=table
         )
-        return redirect("table_detail", table_id=table.id)
 
-    categories = Category.objects.filter(table=table)
-    return render(request, "table_detail.html", {"table": table, "categories": categories})
+        return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
 
-def manage_categories(request, table_id):
-    table = get_object_or_404(Table, id=table_id)
-
-    if request.method == "POST":
+class ManageCategoriesView(LoginRequiredMixin, View):
+    def post(self, request, table_id):
+        table = get_object_or_404(Table, id=table_id)
         category_name = request.POST.get("category_name")
         category_type = request.POST.get("type")
-
         if category_name and category_type:
             Category.objects.create(name=category_name, type=category_type, table=table)
-        return redirect("table_detail", table_id=table.id)
+        return redirect(reverse_lazy("table_detail", kwargs={"table_id": table.id}))
 
-    categories = table.categories.all()
-    return render(request, "manage_categories.html", {"table": table, "categories": categories})
+    def get(self, request, table_id):
+        table = get_object_or_404(Table, id=table_id)
+        categories = table.categories.all()
+        return render(request, "manage_categories.html", {"table": table, "categories": categories})
 
 
-def add_category(request):
-    if request.method == "POST":
+class AddCategoryView(LoginRequiredMixin, View):
+    def post(self, request):
         name = request.POST.get("name")
+        table_id = request.POST.get("table_id")
+
+        if not table_id:
+            messages.error(request, "Table ID is required.")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        table = get_object_or_404(Table, id=table_id, user=request.user)
+
         if name:
-            Category.objects.create(name=name)
+            Category.objects.create(name=name, table=table)
             messages.success(request, "Category added successfully!")
         else:
             messages.error(request, "Category name cannot be empty.")
+
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
-def delete_category(request, table_id, category_id):
-    if request.method == "POST":
-        category = get_object_or_404(Category, id=category_id, table_id=table_id)
+
+class DeleteCategoryView(LoginRequiredMixin, View):
+    def post(self, request, table_id, category_id):
+        category = get_object_or_404(Category, id=category_id, table_id=table_id, table__user=request.user)
         category_name = category.name
         category.delete()
         messages.success(request, f"Category '{category_name}' has been deleted.")
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
-def delete_transaction(request, transaction_id):
-    # Получаем транзакцию по ID
-    transaction = get_object_or_404(Transaction, id=transaction_id)
-
-    if request.method == 'POST':
-        # Удаляем транзакцию
+class DeleteTransactionView(LoginRequiredMixin, View):
+    def post(self, request, transaction_id):
+        transaction = get_object_or_404(Transaction, id=transaction_id, category__table__user=request.user)
+        table_id = transaction.category.table.id
         transaction.delete()
-        # Перенаправляем пользователя на страницу с таблицей транзакций
-        return redirect('table_detail', table_id=transaction.category.table.id)
-
-    # В случае GET запроса (например, если мы не подтверждаем удаление)
-    return redirect('table_detail', table_id=transaction.category.table.id)
+        return redirect(reverse('table_detail', kwargs={'table_id': table_id}))
 
 
-def load_default_categories(request, table_id):
-    if request.method == "POST":
-        default_categories = [
-            {"name": "Продукти", "type": "expense"},
-            {"name": "Кафе", "type": "expense"},
-            {"name": "Подарунки", "type": "expense"},
-            {"name": "Моб. зв'язок", "type": "expense"},
-            {"name": "Транспорт", "type": "expense"},
-            {"name": "Переказ", "type": "expense"},
-            {"name": "Зал", "type": "expense"},
-            {"name": "Розваги", "type": "expense"},
-            {"name": "Підписки", "type": "expense"},
-            {"name": "Ремонт", "type": "expense"},
-            {"name": "Аптека", "type": "expense"},
-            {"name": "Косметика", "type": "expense"},
-            {"name": "Інше", "type": "expense"},
-            {"name": "Комунальні послуги", "type": "expense"},
-            {"name": "Лікарня", "type": "expense"},
-            {"name": "Шопінг", "type": "expense"},
-            {"name": "Б'юті", "type": "expense"},
-            {"name": "Неспішні покупки", "type": "expense"},
-            {"name": "Стоянка", "type": "expense"},
+class LoadDefaultCategoriesView(LoginRequiredMixin, View):
+    default_categories = [
+        {"name": "Продукти", "type": "expense"},
+        {"name": "Кафе", "type": "expense"},
+        {"name": "Подарунки", "type": "expense"},
+        {"name": "Моб. зв'язок", "type": "expense"},
+        {"name": "Транспорт", "type": "expense"},
+        {"name": "Переказ", "type": "expense"},
+        {"name": "Зал", "type": "expense"},
+        {"name": "Розваги", "type": "expense"},
+        {"name": "Підписки", "type": "expense"},
+        {"name": "Ремонт", "type": "expense"},
+        {"name": "Аптека", "type": "expense"},
+        {"name": "Косметика", "type": "expense"},
+        {"name": "Інше", "type": "expense"},
+        {"name": "Комунальні послуги", "type": "expense"},
+        {"name": "Лікарня", "type": "expense"},
+        {"name": "Шопінг", "type": "expense"},
+        {"name": "Б'юті", "type": "expense"},
+        {"name": "Неспішні покупки", "type": "expense"},
+        {"name": "Стоянка", "type": "expense"},
+        {"name": "Переказ", "type": "income"},
+        {"name": "Депозит", "type": "income"},
+        {"name": "Робота", "type": "income"},
+    ]
 
-            {"name": "Переказ", "type": "income"},
-            {"name": "Депозит", "type": "income"},
-            {"name": "Робота", "type": "income"},
+    def post(self, request, table_id):
+        table = get_object_or_404(Table, id=table_id, user=request.user)
+        existing_categories = set(Category.objects.filter(table=table).values_list("name", flat=True))
+        new_categories = [
+            Category(name=cat["name"], type=cat["type"], table=table)
+            for cat in self.default_categories if cat["name"] not in existing_categories
         ]
 
-        # Добавление категорий в базу данных
-        for cat in default_categories:
-            Category.objects.get_or_create(
-                name=cat["name"], type=cat["type"], table_id=table_id
-            )
+        if new_categories:
+            Category.objects.bulk_create(new_categories)
+            messages.success(request, "Standard categories have been loaded successfully.")
+        else:
+            messages.info(request, "All default categories are already added.")
 
-        # Сообщение об успешной загрузке
-        messages.success(request, "Standard categories have been loaded successfully.")
-
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
-@login_required
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-
-
-@login_required
-def edit_transaction(request):
-    if request.method == "POST":
+class EditTransactionView(LoginRequiredMixin, View):
+    def post(self, request):
         transaction_id = request.POST.get('transaction_id')
         transaction = get_object_or_404(Transaction, id=transaction_id, category__table__user=request.user)
-
         transaction.date = request.POST.get('date')
         transaction.category_id = request.POST.get('category_id')
         transaction.type = request.POST.get('type')
         transaction.amount = request.POST.get('amount')
         transaction.description = request.POST.get('description')
         transaction.save()
+        return redirect(reverse('table_detail', kwargs={'table_id': transaction.category.table.id}))
 
-        return redirect('table_detail', table_id=transaction.category.table.id)
 
-
-def about(request):
-    return render(request, 'about.html',)
+class AboutView(View):
+    def get(self, request):
+        return render(request, 'about.html')
 
 
 def custom_404_view(request, exception):
