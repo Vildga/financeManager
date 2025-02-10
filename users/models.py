@@ -6,7 +6,7 @@ class CustomUserManager(BaseUserManager):
         if not email or email.strip() == "":
             raise ValueError("Email обов'язковий")
         email = self.normalize_email(email)
-        extra_fields.setdefault("username", None)
+        extra_fields.pop("username", None)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
