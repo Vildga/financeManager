@@ -1,0 +1,108 @@
+<!-- Modal for Editing Transaction -->
+<div class="modal fade" id="editTransactionModal" tabindex="-1" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTransactionModalLabel">Edit Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'edit_transaction' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="transaction_id" id="transactionId">
+
+                    <div class="mb-3">
+                        <label for="transactionDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="transactionDate" name="date" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transactionType" class="form-label">Type</label>
+                        <select class="form-select" id="transactionType" name="type" required>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transactionCategory" class="form-label">Category</label>
+                        <select class="form-select" id="transactionCategory" name="category_id" required>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" data-type="{{ category.type }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transactionAmount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="transactionAmount" name="amount" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="transactionDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="transactionDescription" name="description" rows="2" maxlength="30"></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const transactionType = document.getElementById('transactionType');
+    const transactionCategory = document.getElementById('transactionCategory');
+
+    function filterCategories() {
+        const selectedType = transactionType.value;
+        const options = transactionCategory.querySelectorAll('option');
+
+        options.forEach(option => {
+            if (option.dataset.type === selectedType) {
+                option.style.display = 'block';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+
+        // Якщо вибраний тип змінився, оновлюємо категорії
+        if (!transactionCategory.value || transactionCategory.querySelector(`option[value="${transactionCategory.value}"]`).style.display === 'none') {
+            const firstVisibleOption = transactionCategory.querySelector('option:not([style*="display: none"])');
+            if (firstVisibleOption) {
+                transactionCategory.value = firstVisibleOption.value;
+            } else {
+                transactionCategory.value = ''; // Скидаємо вибір, якщо немає відповідних категорій
+            }
+        }
+    }
+
+    transactionType.addEventListener('change', filterCategories);
+    filterCategories();
+});
+
+function populateModal(id, date, type, categoryId, amount, description) {
+    document.getElementById('transactionId').value = id;
+    document.getElementById('transactionDate').value = date;
+    document.getElementById('transactionAmount').value = amount;
+    document.getElementById('transactionDescription').value = description;
+
+    // Вибираємо правильний тип (income/expense)
+    const transactionType = document.getElementById('transaction-type');
+    transactionType.value = type;
+
+    // Фільтруємо категорії перед вибором
+    filterCategories();
+
+    // Вибираємо потрібну категорію після фільтрації
+    const categorySelect = document.getElementById('transactionCategory');
+    categorySelect.value = categoryId;
+
+    // Тригеримо подію зміни, щоб оновити список категорій
+    transactionType.dispatchEvent(new Event('change'));
+}
+</script>
