@@ -40,6 +40,7 @@ urlpatterns = [
     path('edit_transaction/', views.EditTransactionView.as_view(), name='edit_transaction'),
     path('about/', views.AboutView.as_view(), name='about'),
     path("users/", include("users.urls")),
+    path("get-available-months/", views.AvailableMonthsView.as_view(), name="get_available_months"),
 
 
 

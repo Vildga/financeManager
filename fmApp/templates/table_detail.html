@@ -24,6 +24,76 @@
             </button>
         </div>
 
+        <!-- Фільтр за місяцями та роками -->
+        <div class="container text-center">
+            <div class="filter-container mb-4 d-flex gap-3 align-items-center justify-content-center">
+                <label for="yearFilter" class="form-label">Year:</label>
+                <select name="year" id="yearFilter" class="form-select w-auto">
+                    {% for year in available_years %}
+                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label for="monthFilter" class="form-label">Month:</label>
+                <select name="month" id="monthFilter" class="form-select w-auto">
+                    {% for month in available_months %}
+                        <option value="{{ month.month }}" {% if month.month == selected_month %}selected{% endif %}>
+                            {{ month.month_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const yearFilter = document.getElementById('yearFilter');
+                const monthFilter = document.getElementById('monthFilter');
+
+                yearFilter.addEventListener('change', function () {
+                    updateMonths(yearFilter.value);
+                });
+
+                monthFilter.addEventListener('change', function () {
+                    updateUrl();
+                });
+
+                function updateMonths(selectedYear) {
+                    fetch(`/get-available-months/?year=${selectedYear}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.months.length > 0) {
+                                monthFilter.innerHTML = '';
+                                data.months.forEach(month => {
+                                    let option = document.createElement("option");
+                                    option.value = month.month;
+                                    option.textContent = month.month_name;
+                                    monthFilter.appendChild(option);
+                                });
+
+                                monthFilter.value = data.months[0].month;
+                                updateUrl();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching months:', error));
+                }
+
+                function updateUrl() {
+                    const month = monthFilter.value;
+                    const year = yearFilter.value;
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('month', month);
+                    params.set('year', year);
+                    window.location.search = params.toString();
+                }
+            });
+        </script>
+
+
+
 
         <div class="row">
             <!-- Expense Summary -->

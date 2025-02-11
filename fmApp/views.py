@@ -18,6 +18,16 @@ from django.views import View
 from .permissions import IsTableOwnerMixin
 from django.db.models import Sum, Case, When, Value, DecimalField, F
 from django.db import transaction
+from django.utils.timezone import now
+from django.db.models.functions import ExtractYear, ExtractMonth
+
+
+MONTH_NAMES = {
+    1: "January", 2: "February", 3: "March", 4: "April",
+    5: "May", 6: "June", 7: "July", 8: "August",
+    9: "September", 10: "October", 11: "November", 12: "December"
+}
+
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -70,39 +80,65 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         context = super().get_context_data(**kwargs)
         table = self.get_object()
 
+        selected_month = self.request.GET.get('month')
+        selected_year = self.request.GET.get('year')
+
+        selected_month = int(selected_month) if selected_month and selected_month.isdigit() else now().month
+        selected_year = int(selected_year) if selected_year and selected_year.isdigit() else now().year
+
         transactions = (
             Transaction.objects
-            .filter(table=table)
+            .filter(table=table, date__year=selected_year, date__month=selected_month)
             .prefetch_related("category")
         )
 
-        income_summary = (
+        summaries = (
             transactions
-            .filter(category__type="income")
-            .values("category__name")
+            .values("category__name", "category__type")
             .annotate(total=Sum("amount"))
             .order_by("category__name")
         )
 
-        expense_summary = (
-            transactions
-            .filter(category__type="expense")
-            .values("category__name")
-            .annotate(total=Sum("amount"))
-            .order_by("category__name")
+        income_summary = [s for s in summaries if s["category__type"] == "income"]
+        expense_summary = [s for s in summaries if s["category__type"] == "expense"]
+
+        totals = {"income": 0, "expense": 0}
+        for t in transactions.values("category__type").annotate(total=Sum("amount")):
+            totals[t["category__type"]] = t["total"]
+
+        available_years = list(
+            Transaction.objects
+            .filter(table=table)
+            .annotate(year=ExtractYear("date"))
+            .values_list("year", flat=True)
+            .distinct()
+            .order_by("-year")
         )
 
-        total_income = transactions.filter(category__type="income").aggregate(total=Sum("amount"))["total"] or 0
-        total_expense = transactions.filter(category__type="expense").aggregate(total=Sum("amount"))["total"] or 0
+        available_months = list(
+            Transaction.objects
+            .filter(table=table, date__year=selected_year)
+            .annotate(month=ExtractMonth("date"))
+            .values_list("month", flat=True)
+            .distinct()
+            .order_by("month")
+        )
+
+        available_months = [{"month": m, "month_name": MONTH_NAMES[m]} for m in available_months]
 
         context.update({
             "transactions": transactions,
             "categories": Category.objects.all(),
             "expense_summary": expense_summary,
             "income_summary": income_summary,
-            "total_income": total_income,
-            "total_expense": total_expense,
-            "net_total": total_income - total_expense,
+            "total_income": totals["income"],
+            "total_expense": totals["expense"],
+            "net_total": totals["income"] - totals["expense"],
+            "selected_month": selected_month,
+            "selected_year": selected_year,
+            "available_months": available_months,
+            "available_years": available_years,
+            "month_names": MONTH_NAMES,
         })
 
         return context
@@ -176,3 +212,24 @@ class AboutView(View):
 
 def custom_404_view(request, exception):
     return render(request, '404.html', status=404)
+
+
+class AvailableMonthsView(View):
+    def get(self, request, *args, **kwargs):
+        year = request.GET.get("year")
+
+        if not year or not year.isdigit():
+            return JsonResponse({"months": []})
+
+        months = (
+            Transaction.objects
+            .filter(date__year=int(year))
+            .annotate(month=ExtractMonth("date"))
+            .values("month")
+            .distinct()
+            .order_by("month")
+        )
+
+        months_list = [{"month": m["month"], "month_name": MONTH_NAMES[m["month"]]} for m in months]
+
+        return JsonResponse({"months": months_list})
