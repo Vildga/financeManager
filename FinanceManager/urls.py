@@ -36,14 +36,11 @@ urlpatterns = [
     path('delete_table/', views.TableDeleteView.as_view(), name='delete_table'),
     path('table/<int:table_id>/', views.TableDetailView.as_view(), name='table_detail'),
     path('table/<int:table_id>/add_transaction/', views.AddTransactionView.as_view(), name='add_transaction'),
-    path('add-category/', views.AddCategoryView.as_view(), name='add_category'),
-    path('manage-categories/<int:table_id>/', views.ManageCategoriesView.as_view(), name='manage_categories'),
-    path('table/<int:table_id>/category/<int:category_id>/delete/', views.DeleteCategoryView.as_view(), name='delete_category'),
     path('delete_transaction/<int:transaction_id>/', views.DeleteTransactionView.as_view(), name='delete_transaction'),
-    path('load_default_categories/<int:table_id>/', views.LoadDefaultCategoriesView.as_view(), name='load_default_categories'),
     path('edit_transaction/', views.EditTransactionView.as_view(), name='edit_transaction'),
     path('about/', views.AboutView.as_view(), name='about'),
     path("users/", include("users.urls")),
+    path("get-available-months/", views.AvailableMonthsView.as_view(), name="get_available_months"),
 
 
 

@@ -10,15 +10,26 @@ from .forms import TableForm
 from .models import Table
 from django.shortcuts import render, get_object_or_404
 from .models import Table, Category, Transaction
-from django.db.models import Sum
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, DetailView
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.views import View
+from .permissions import IsTableOwnerMixin
+from django.db.models import Sum, Case, When, Value, DecimalField, F
+from django.db import transaction
+from django.utils.timezone import now
+from django.db.models.functions import ExtractYear, ExtractMonth
 
 
-class HomeView(LoginRequiredMixin, TemplateView):
+MONTH_NAMES = {
+    1: "January", 2: "February", 3: "March", 4: "April",
+    5: "May", 6: "June", 7: "July", 8: "August",
+    9: "September", 10: "October", 11: "November", 12: "December"
+}
+
+
+class HomeView(TemplateView):
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
@@ -37,10 +48,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
         return self.get(request, *args, **kwargs)
 
 
-class TableCreateView(LoginRequiredMixin, CreateView):
+class TableCreateView(CreateView):
     model = Table
     form_class = TableForm
-    template_name = 'add_table.html'
+    template_name = 'modals/add_transaction_modal.html'
     success_url = reverse_lazy('home')
 
     def form_valid(self, form):
@@ -48,7 +59,7 @@ class TableCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TableDeleteView(LoginRequiredMixin, View):
+class TableDeleteView(View):
     def post(self, request, *args, **kwargs):
         table_id = request.POST.get('table_id')
         if not table_id:
@@ -59,178 +70,135 @@ class TableDeleteView(LoginRequiredMixin, View):
         return redirect('home')
 
 
-class TableDetailView(LoginRequiredMixin, DetailView):
+class TableDetailView(IsTableOwnerMixin, DetailView):
     model = Table
     template_name = 'table_detail.html'
     context_object_name = 'table'
     pk_url_kwarg = 'table_id'
 
-    def get_object(self, queryset=None):
-        table = get_object_or_404(Table, id=self.kwargs.get('table_id'))
-        if table.user != self.request.user:
-            return redirect('home')
-        return table
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         table = self.get_object()
 
-        context['transactions'] = Transaction.objects.filter(
-            category__table=table
-        ).order_by('-date')
+        selected_month = self.request.GET.get('month')
+        selected_year = self.request.GET.get('year')
 
-        context['expense_summary'] = Transaction.objects.filter(
-            category__table=table, type='expense'
-        ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
+        selected_month = int(selected_month) if selected_month and selected_month.isdigit() else now().month
+        selected_year = int(selected_year) if selected_year and selected_year.isdigit() else now().year
 
-        context['income_summary'] = Transaction.objects.filter(
-            category__table=table, type='income'
-        ).values('category__name').annotate(total=Sum('amount')).order_by('category__name')
+        transactions = (
+            Transaction.objects
+            .filter(table=table, date__year=selected_year, date__month=selected_month)
+            .prefetch_related("category")
+        )
 
-        context['categories'] = Category.objects.filter(table=table)
+        summaries = (
+            transactions
+            .values("category__name", "category__type")
+            .annotate(total=Sum("amount"))
+            .order_by("category__name")
+        )
 
-        context['total_income'] = Transaction.objects.filter(
-            category__table=table, type='income'
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        income_summary = [s for s in summaries if s["category__type"] == "income"]
+        expense_summary = [s for s in summaries if s["category__type"] == "expense"]
 
-        context['total_expense'] = Transaction.objects.filter(
-            category__table=table, type='expense'
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        totals = {
+            "income": sum(s["total"] for s in income_summary),
+            "expense": sum(s["total"] for s in expense_summary)
+        }
 
-        context['net_total'] = context['total_income'] - context['total_expense']
+        available_years_months = (
+            Transaction.objects
+            .filter(table=table)
+            .annotate(year=ExtractYear("date"), month=ExtractMonth("date"))
+            .values("year", "month")
+            .distinct()
+            .order_by("-year", "month")
+
+        )
+
+        available_years = sorted(set(item["year"] for item in available_years_months), reverse=True)
+        available_months = sorted(
+            set(item["month"] for item in available_years_months if item["year"] == selected_year))
+        available_months = [{"month": m, "month_name": MONTH_NAMES[m]} for m in available_months]
+
+        context.update({
+            "transactions": transactions,
+            "categories": Category.objects.all(),
+            "expense_summary": expense_summary,
+            "income_summary": income_summary,
+            "total_income": totals["income"],
+            "total_expense": totals["expense"],
+            "net_total": totals["income"] - totals["expense"],
+            "selected_month": selected_month,
+            "selected_year": selected_year,
+            "available_months": available_months,
+            "available_years": available_years,
+            "month_names": MONTH_NAMES,
+        })
 
         return context
 
 
-class AddTransactionView(LoginRequiredMixin, View):
+class AddTransactionView(IsTableOwnerMixin, View):
     def post(self, request, table_id):
-        table = get_object_or_404(Table, id=table_id)
+
+        table = self.get_table()
+
         transaction_date = request.POST.get("date")
-        transaction_type = request.POST.get("type")
-        category_id = request.POST.get("category")
+        category_ids = request.POST.getlist("category")
         amount = request.POST.get("amount")
         description = request.POST.get("description")
-        category = get_object_or_404(Category, id=category_id)
 
-        Transaction.objects.create(
-            date=transaction_date,
-            type=transaction_type,
-            category=category,
-            amount=amount,
-            description=description,
-            table=table
-        )
+        if not category_ids:
+            messages.error(request, "You must select at least one category.")
+            return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
+        categories = list(Category.objects.filter(id__in=category_ids))
+
+        if not categories:
+            messages.error(request, "Selected categories do not exist.")
+            return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
+
+        with transaction.atomic():
+            new_transaction = Transaction.objects.create(
+                date=transaction_date,
+                amount=amount,
+                description=description,
+                table=table
+            )
+            new_transaction.category.add(*categories)
+
+        messages.success(request, "Transaction added successfully.")
         return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
-
-
-class ManageCategoriesView(LoginRequiredMixin, View):
-    def post(self, request, table_id):
-        table = get_object_or_404(Table, id=table_id)
-        category_name = request.POST.get("category_name")
-        category_type = request.POST.get("type")
-        if category_name and category_type:
-            Category.objects.create(name=category_name, type=category_type, table=table)
-        return redirect(reverse_lazy("table_detail", kwargs={"table_id": table.id}))
-
-    def get(self, request, table_id):
-        table = get_object_or_404(Table, id=table_id)
-        categories = table.categories.all()
-        return render(request, "manage_categories.html", {"table": table, "categories": categories})
-
-
-class AddCategoryView(LoginRequiredMixin, View):
-    def post(self, request):
-        name = request.POST.get("name")
-        table_id = request.POST.get("table_id")
-
-        if not table_id:
-            messages.error(request, "Table ID is required.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-
-        table = get_object_or_404(Table, id=table_id, user=request.user)
-
-        if name:
-            Category.objects.create(name=name, table=table)
-            messages.success(request, "Category added successfully!")
-        else:
-            messages.error(request, "Category name cannot be empty.")
-
-        return redirect(request.META.get('HTTP_REFERER', '/'))
-
-
-
-class DeleteCategoryView(LoginRequiredMixin, View):
-    def post(self, request, table_id, category_id):
-        category = get_object_or_404(Category, id=category_id, table_id=table_id, table__user=request.user)
-        category_name = category.name
-        category.delete()
-        messages.success(request, f"Category '{category_name}' has been deleted.")
-        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 class DeleteTransactionView(LoginRequiredMixin, View):
     def post(self, request, transaction_id):
-        transaction = get_object_or_404(Transaction, id=transaction_id, category__table__user=request.user)
-        table_id = transaction.category.table.id
+        transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
+        table_id = transaction.table.id
         transaction.delete()
-        return redirect(reverse('table_detail', kwargs={'table_id': table_id}))
+        return HttpResponseRedirect(reverse('table_detail', kwargs={'table_id': table_id}))
 
 
-class LoadDefaultCategoriesView(LoginRequiredMixin, View):
-    default_categories = [
-        {"name": "Продукти", "type": "expense"},
-        {"name": "Кафе", "type": "expense"},
-        {"name": "Подарунки", "type": "expense"},
-        {"name": "Моб. зв'язок", "type": "expense"},
-        {"name": "Транспорт", "type": "expense"},
-        {"name": "Переказ", "type": "expense"},
-        {"name": "Зал", "type": "expense"},
-        {"name": "Розваги", "type": "expense"},
-        {"name": "Підписки", "type": "expense"},
-        {"name": "Ремонт", "type": "expense"},
-        {"name": "Аптека", "type": "expense"},
-        {"name": "Косметика", "type": "expense"},
-        {"name": "Інше", "type": "expense"},
-        {"name": "Комунальні послуги", "type": "expense"},
-        {"name": "Лікарня", "type": "expense"},
-        {"name": "Шопінг", "type": "expense"},
-        {"name": "Б'юті", "type": "expense"},
-        {"name": "Неспішні покупки", "type": "expense"},
-        {"name": "Стоянка", "type": "expense"},
-        {"name": "Переказ", "type": "income"},
-        {"name": "Депозит", "type": "income"},
-        {"name": "Робота", "type": "income"},
-    ]
-
-    def post(self, request, table_id):
-        table = get_object_or_404(Table, id=table_id, user=request.user)
-        existing_categories = set(Category.objects.filter(table=table).values_list("name", flat=True))
-        new_categories = [
-            Category(name=cat["name"], type=cat["type"], table=table)
-            for cat in self.default_categories if cat["name"] not in existing_categories
-        ]
-
-        if new_categories:
-            Category.objects.bulk_create(new_categories)
-            messages.success(request, "Standard categories have been loaded successfully.")
-        else:
-            messages.info(request, "All default categories are already added.")
-
-        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 class EditTransactionView(LoginRequiredMixin, View):
     def post(self, request):
         transaction_id = request.POST.get('transaction_id')
-        transaction = get_object_or_404(Transaction, id=transaction_id, category__table__user=request.user)
+        transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
+
         transaction.date = request.POST.get('date')
-        transaction.category_id = request.POST.get('category_id')
-        transaction.type = request.POST.get('type')
         transaction.amount = request.POST.get('amount')
         transaction.description = request.POST.get('description')
+
+        category_id = request.POST.get('category_id')
+        category = get_object_or_404(Category, id=category_id)
+
+        transaction.category.set([category])
         transaction.save()
-        return redirect(reverse('table_detail', kwargs={'table_id': transaction.category.table.id}))
+
+        return redirect(reverse('table_detail', kwargs={'table_id': transaction.table.id}))
 
 
 class AboutView(View):
@@ -240,3 +208,24 @@ class AboutView(View):
 
 def custom_404_view(request, exception):
     return render(request, '404.html', status=404)
+
+
+class AvailableMonthsView(View):
+    def get(self, request, *args, **kwargs):
+        year = request.GET.get("year")
+
+        if not year or not year.isdigit():
+            return JsonResponse({"months": []})
+
+        months = (
+            Transaction.objects
+            .filter(date__year=int(year))
+            .annotate(month=ExtractMonth("date"))
+            .values("month")
+            .distinct()
+            .order_by("month")
+        )
+
+        months_list = [{"month": m["month"], "month_name": MONTH_NAMES[m["month"]]} for m in months]
+
+        return JsonResponse({"months": months_list})

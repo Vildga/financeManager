@@ -1,0 +1,73 @@
+<div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addTransactionModalLabel">Add Transaction</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'add_transaction' table.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="transaction-date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="transaction-date" name="date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction-type" class="form-label">Type</label>
+                                <select class="form-select" id="transaction-type" name="type" required>
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction-category" class="form-label">Category</label>
+                                <select class="form-select" id="transaction-category" name="category" required>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" data-type="{{ category.type }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction-amount" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="transaction-amount" name="amount" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="transaction-description" class="form-label">Description</label>
+                                <textarea class="form-control" id="transaction-description" name="description" maxlength="30"></textarea>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success">Add Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const transactionType = document.getElementById('transaction-type');
+            const transactionCategory = document.getElementById('transaction-category');
+
+            // Function to filter categories based on the selected type
+            function filterCategories() {
+                const selectedType = transactionType.value;
+                const options = transactionCategory.querySelectorAll('option');
+
+                options.forEach(option => {
+                    if (option.dataset.type === selectedType) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                transactionCategory.value = '';
+            }
+
+            transactionType.addEventListener('change', filterCategories);
+
+            filterCategories();
+        });
+    </script>
