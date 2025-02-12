@@ -102,28 +102,24 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         income_summary = [s for s in summaries if s["category__type"] == "income"]
         expense_summary = [s for s in summaries if s["category__type"] == "expense"]
 
-        totals = {"income": 0, "expense": 0}
-        for t in transactions.values("category__type").annotate(total=Sum("amount")):
-            totals[t["category__type"]] = t["total"]
+        totals = {
+            "income": sum(s["total"] for s in income_summary),
+            "expense": sum(s["total"] for s in expense_summary)
+        }
 
-        available_years = list(
+        available_years_months = (
             Transaction.objects
             .filter(table=table)
-            .annotate(year=ExtractYear("date"))
-            .values_list("year", flat=True)
+            .annotate(year=ExtractYear("date"), month=ExtractMonth("date"))
+            .values("year", "month")
             .distinct()
-            .order_by("-year")
+            .order_by("-year", "month")
+
         )
 
-        available_months = list(
-            Transaction.objects
-            .filter(table=table, date__year=selected_year)
-            .annotate(month=ExtractMonth("date"))
-            .values_list("month", flat=True)
-            .distinct()
-            .order_by("month")
-        )
-
+        available_years = sorted(set(item["year"] for item in available_years_months), reverse=True)
+        available_months = sorted(
+            set(item["month"] for item in available_years_months if item["year"] == selected_year))
         available_months = [{"month": m, "month_name": MONTH_NAMES[m]} for m in available_months]
 
         context.update({
