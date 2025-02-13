@@ -38,14 +38,24 @@ class Table(models.Model):
 
 
 class Transaction(models.Model):
+
+    class CurrencyChoices(models.TextChoices):
+            UAH = 'UAH', 'Гривня'
+            USD = 'USD', 'Долар'
+            EUR = 'EUR', 'Євро'
+
     category = models.ManyToManyField(Category, related_name="transactions")
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True, null=True)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
+    currency = models.CharField(max_length=3, choices=CurrencyChoices.choices, default='UAH')
+    amount_in_uah = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+
 
     class Meta:
         ordering = ['-date']
 
     def __str__(self):
-        return f"{self.category.type} - {self.amount} on {self.date}"
+        return f"{self.amount} {self.currency} ({self.amount_in_uah} UAH) on {self.date}"

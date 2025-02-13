@@ -27,10 +27,18 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="transaction-amount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="transaction-amount" name="amount" step="0.01" required>
+
+                            <div class="mb-3 d-flex align-items-center">
+                                <label for="transaction-amount" class="form-label me-2">Amount</label>
+                                <input type="number" class="form-control me-2" id="transaction-amount" name="amount" step="0.01" required style="width: 300px;">
+
+                                <select name="currency" class="form-select ms-auto" style="width: 100px;">
+                                    {% for currency_code, currency_name in currency_choices %}
+                                        <option value="{{ currency_code }}">{{ currency_code }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
+
                             <div class="mb-3">
                                 <label for="transaction-description" class="form-label">Description</label>
                                 <textarea class="form-control" id="transaction-description" name="description" maxlength="30"></textarea>

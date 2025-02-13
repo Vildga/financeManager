@@ -273,42 +273,50 @@
                                         <span>{{ category.name }}</span>
                                     {% endfor %}
                                 </td>
-                                <td>{{ transaction.amount }}</td>
+                                <td>
+                                    {% if transaction.currency == "UAH" %}
+                                        {{ transaction.amount }} UAH
+                                    {% else %}
+                                        {{ transaction.amount }} {{ transaction.currency }} ↔ {{ transaction.amount_in_uah }} UAH
+                                    {% endif %}
+                                </td>
                                 <td>{{ transaction.description }}</td>
                                 <td>
                                     <button
-                                            type="button"
-                                            class="btn btn-sm btn-custom-yellow"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editTransactionModal"
-                                            onclick="populateModal(
-                                                '{{ transaction.id }}',
-                                                '{{ transaction.date|date:"Y-m-d" }}',
-                                                '{{ transaction.type }}',
-                                                '{{ transaction.category.first.id }}',
-                                                '{{ transaction.amount }}',
-                                                '{{ transaction.description }}'
-                                            )"
-                                        >
-                                            Edit
-                                        </button>
+                                        type="button"
+                                        class="btn btn-sm btn-custom-yellow"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editTransactionModal"
+                                        onclick="populateModal(
+                                            '{{ transaction.id }}',
+                                            '{{ transaction.date|date:"Y-m-d" }}',
+                                            '{{ transaction.type }}',
+                                            '{{ transaction.category.first.id }}',
+                                            '{{ transaction.amount }}',
+                                            '{{ transaction.currency }}',
+                                            '{{ transaction.description }}'
+                                        )"
+                                    >
+                                        Edit
+                                    </button>
 
-                                        <button
-                                            type="button"
-                                            class="btn btn-danger btn-sm"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteTransactionModal"
-                                            onclick="setDeleteAction('{{ transaction.id }}')"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteTransactionModal"
+                                        onclick="setDeleteAction('{{ transaction.id }}')"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
+
 
     {% include "modals/add_transaction_modal.html" %}
     {% include "modals/edit_transaction_modal.html" %}

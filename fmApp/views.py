@@ -20,6 +20,8 @@ from django.db.models import Sum, Case, When, Value, DecimalField, F
 from django.db import transaction
 from django.utils.timezone import now
 from django.db.models.functions import ExtractYear, ExtractMonth
+from fmApp.utils import get_exchange_rate
+from decimal import Decimal
 
 
 MONTH_NAMES = {
@@ -95,7 +97,7 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         summaries = (
             transactions
             .values("category__name", "category__type")
-            .annotate(total=Sum("amount"))
+            .annotate(total=Sum("amount_in_uah"))
             .order_by("category__name")
         )
 
@@ -135,6 +137,7 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             "available_months": available_months,
             "available_years": available_years,
             "month_names": MONTH_NAMES,
+            "currency_choices": Transaction.CurrencyChoices.choices,
         })
 
         return context
@@ -149,6 +152,7 @@ class AddTransactionView(IsTableOwnerMixin, View):
         category_ids = request.POST.getlist("category")
         amount = request.POST.get("amount")
         description = request.POST.get("description")
+        currency = request.POST.get("currency", "UAH")
 
         if not category_ids:
             messages.error(request, "You must select at least one category.")
@@ -161,9 +165,21 @@ class AddTransactionView(IsTableOwnerMixin, View):
             return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
         with transaction.atomic():
+            exchange_rate = Decimal(get_exchange_rate(currency, transaction_date))
+
+            if exchange_rate is None:
+                messages.error(request, "Failed to retrieve exchange rate. Please try again.")
+                return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
+
+            amount_decimal = Decimal(amount)
+            amount_in_uah = amount_decimal * exchange_rate
+
             new_transaction = Transaction.objects.create(
                 date=transaction_date,
                 amount=amount,
+                amount_in_uah=amount_in_uah,
+                currency=currency,
+                exchange_rate=exchange_rate,
                 description=description,
                 table=table
             )
@@ -189,13 +205,26 @@ class EditTransactionView(LoginRequiredMixin, View):
         transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
 
         transaction.date = request.POST.get('date')
-        transaction.amount = request.POST.get('amount')
+        new_amount = request.POST.get('amount')
         transaction.description = request.POST.get('description')
+        new_currency = request.POST.get('currency', transaction.currency)
 
         category_id = request.POST.get('category_id')
         category = get_object_or_404(Category, id=category_id)
 
         transaction.category.set([category])
+
+        if new_currency != transaction.currency or new_amount != transaction.amount:
+            exchange_rate = get_exchange_rate(new_currency, transaction.date)
+
+            if exchange_rate is None:
+                exchange_rate = Decimal("1.00")
+
+            transaction.currency = new_currency
+            transaction.amount = new_amount
+            transaction.exchange_rate = exchange_rate
+            transaction.amount_in_uah = Decimal(new_amount) * Decimal(exchange_rate)
+
         transaction.save()
 
         return redirect(reverse('table_detail', kwargs={'table_id': transaction.table.id}))
