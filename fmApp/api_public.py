@@ -25,10 +25,7 @@ class TotalTransactionsAPIView(APIView):
         responses={200: TotalTransactionsSerializer()},
     )
     def get(self, request):
-        total_income = Transaction.objects.filter(category__type="income").aggregate(total=Sum("amount_in_uah"))["total"] or 0
-        total_expense = Transaction.objects.filter(category__type="expense").aggregate(total=Sum("amount_in_uah"))["total"] or 0
-
-        data = {"total_income": total_income, "total_expense": total_expense}
+        data = Transaction.my_manager.get_total_income_expense()
         return Response(TotalTransactionsSerializer(data).data)
 
 
@@ -41,13 +38,9 @@ class AverageExpenseByCategoryAPIView(APIView):
         responses={200: AverageExpenseByCategorySerializer()}
     )
     def get(self, request):
-        expenses = (
-            Transaction.objects.filter(category__type="expense")
-            .values("category__name")
-            .annotate(avg_expense=Avg("amount_in_uah"))
-            .order_by("-avg_expense")
-        )
+        expenses = Transaction.my_manager.get_average_expense_by_category()
         return Response(AverageExpenseByCategorySerializer(expenses, many=True).data)
+
 
 
 class ExpensesByMonthAPIView(APIView):
@@ -59,14 +52,7 @@ class ExpensesByMonthAPIView(APIView):
         responses={200: ExpensesByMonthSerializer()},
     )
     def get(self, request):
-        monthly_expenses = (
-            Transaction.objects.filter(category__type="expense")
-            .annotate(month=TruncMonth("date"))
-            .values("month")
-            .annotate(total_expense=Sum("amount_in_uah"))
-            .order_by("month")
-        )
-
+        monthly_expenses = Transaction.my_manager.get_expenses_by_month()
         return Response(ExpensesByMonthSerializer(monthly_expenses, many=True).data)
 
 
@@ -79,15 +65,7 @@ class ExpenseShareByCategoryAPIView(APIView):
         responses={200: ExpenseShareByCategorySerializer()},
     )
     def get(self, request):
-        total_expense = Transaction.objects.filter(category__type="expense").aggregate(total=Sum("amount_in_uah"))["total"] or 1
-
-        category_shares = (
-            Transaction.objects.filter(category__type="expense")
-            .values("category__name")
-            .annotate(category_total=Sum("amount_in_uah"))
-            .annotate(percentage=F("category_total") * 100 / total_expense)
-            .order_by("-percentage")
-        )
+        category_shares = Transaction.my_manager.get_expense_share_by_category()
         return Response(ExpenseShareByCategorySerializer(category_shares, many=True).data)
 
 
@@ -100,18 +78,5 @@ class IncomeExpenseTrendAPIView(APIView):
         responses={200: IncomeExpenseTrendSerializer()},
     )
     def get(self, request):
-        trends = (
-            Transaction.objects.annotate(month=TruncMonth("date"))
-            .values("month", "category__type")
-            .annotate(total=Sum("amount_in_uah"))
-            .order_by("month")
-        )
-
-        income_trend = {t["month"].strftime("%Y-%m") if t["month"] else None: t["total"]
-                        for t in trends if t["category__type"] == "income"}
-
-        expense_trend = {t["month"].strftime("%Y-%m") if t["month"] else None: t["total"]
-                         for t in trends if t["category__type"] == "expense"}
-
-        data = {"income_trend": income_trend, "expense_trend": expense_trend}
-        return Response(IncomeExpenseTrendSerializer(data).data)
+        trends = Transaction.my_manager.get_income_expense_trend()
+        return Response(IncomeExpenseTrendSerializer(trends).data)
