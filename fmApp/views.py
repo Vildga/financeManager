@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
 from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-from .forms import TableForm
+from .forms import TableForm, LanguageForm
 from .models import Table
 from django.shortcuts import render, get_object_or_404
 from .models import Table, Category, Transaction
@@ -22,6 +22,10 @@ from django.utils.timezone import now
 from django.db.models.functions import ExtractYear, ExtractMonth
 from fmApp.utils import get_exchange_rate
 from decimal import Decimal
+from django.views.generic.edit import UpdateView
+from users.models import CustomUser
+from django.utils.translation import activate
+from django.utils.translation import gettext as _
 
 
 MONTH_NAMES = {
@@ -155,20 +159,20 @@ class AddTransactionView(IsTableOwnerMixin, View):
         currency = request.POST.get("currency", "UAH")
 
         if not category_ids:
-            messages.error(request, "You must select at least one category.")
+            messages.error(request, _("You must select at least one category."))
             return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
         categories = list(Category.objects.filter(id__in=category_ids))
 
         if not categories:
-            messages.error(request, "Selected categories do not exist.")
+            messages.error(request, _("Selected categories do not exist."))
             return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
         with transaction.atomic():
             exchange_rate = Decimal(get_exchange_rate(currency, transaction_date))
 
             if exchange_rate is None:
-                messages.error(request, "Failed to retrieve exchange rate. Please try again.")
+                messages.error(request, _("Failed to retrieve exchange rate. Please try again."))
                 return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
             amount_decimal = Decimal(amount)
@@ -185,11 +189,12 @@ class AddTransactionView(IsTableOwnerMixin, View):
             )
             new_transaction.category.add(*categories)
 
-        messages.success(request, "Transaction added successfully.")
+        messages.success(request, _("Transaction added successfully."))
         return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
 
 
-class DeleteTransactionView(LoginRequiredMixin, View):
+
+class DeleteTransactionView(View):
     def post(self, request, transaction_id):
         transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
         table_id = transaction.table.id
@@ -199,7 +204,7 @@ class DeleteTransactionView(LoginRequiredMixin, View):
 
 
 
-class EditTransactionView(LoginRequiredMixin, View):
+class EditTransactionView(View):
     def post(self, request):
         transaction_id = request.POST.get('transaction_id')
         transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
@@ -258,3 +263,26 @@ class AvailableMonthsView(View):
         months_list = [{"month": m["month"], "month_name": MONTH_NAMES[m["month"]]} for m in months]
 
         return JsonResponse({"months": months_list})
+
+
+class SettingsView(LoginRequiredMixin, UpdateView):
+    model = CustomUser
+    form_class = LanguageForm
+    template_name = "settings.html"
+    success_url = reverse_lazy("settings")
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.request.session["django_language"] = self.request.user.language
+        activate(self.request.user.language)
+        return response
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            activate(request.user.language)
+            request.session["django_language"] = request.user.language
+        return super().get(request, *args, **kwargs)
+

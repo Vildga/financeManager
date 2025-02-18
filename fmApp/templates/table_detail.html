@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/../../static/table-detail-style.css' %}">
@@ -20,14 +21,14 @@
         <!-- Button to add transaction -->
         <div class="button-container mb-4">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
-                Add Transaction
+                {% trans "Add Transaction" %}
             </button>
         </div>
 
         <!-- Фільтр за місяцями та роками -->
         <div class="container text-center">
             <div class="filter-container mb-4 d-flex gap-3 align-items-center justify-content-center">
-                <label for="yearFilter" class="form-label">Year:</label>
+                <label for="yearFilter" class="form-label">{% trans "Year" %}:</label>
                 <select name="year" id="yearFilter" class="form-select w-auto">
                     {% for year in available_years %}
                         <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
@@ -36,7 +37,7 @@
                     {% endfor %}
                 </select>
 
-                <label for="monthFilter" class="form-label">Month:</label>
+                <label for="monthFilter" class="form-label">{% trans "Month" %}:</label>
                 <select name="month" id="monthFilter" class="form-select w-auto">
                     {% for month in available_months %}
                         <option value="{{ month.month }}" {% if month.month == selected_month %}selected{% endif %}>
@@ -100,25 +101,25 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Expense Summary</h5>
+                        <h5>{% trans "Expense Summary" %}</h5>
                     </div>
                     <div class="card-body">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Category</th>
-                                    <th>Total Expense</th>
+                                    <th>{% trans "Category" %}</th>
+                                    <th>{% trans "Total Expense" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for expense in expense_summary %}
                                     <tr>
-                                        <td>{{ expense.category__name}}</td>
+                                        <td>{{ expense.category__name }}</td>
                                         <td>{{ expense.total }}</td>
                                     </tr>
                                 {% endfor %}
                                 <tr class="table-dark">
-                                    <td><strong>Total Expenses</strong></td>
+                                    <td><strong>{% trans "Total Expenses" %}</strong></td>
                                     <td><strong>{{ total_expense }}</strong></td>
                                 </tr>
                             </tbody>
@@ -131,14 +132,14 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Income Summary</h5>
+                        <h5>{% trans "Income Summary" %}</h5>
                     </div>
                     <div class="card-body">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Category</th>
-                                    <th>Total Income</th>
+                                    <th>{% trans "Category" %}</th>
+                                    <th>{% trans "Total Income" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,7 +150,7 @@
                                     </tr>
                                 {% endfor %}
                                 <tr class="table-dark">
-                                    <td><strong>Total Income</strong></td>
+                                    <td><strong>{% trans "Total Income" %}</strong></td>
                                     <td><strong>{{ total_income }}</strong></td>
                                 </tr>
                             </tbody>
@@ -164,7 +165,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Expense Breakdown</h5>
+                        <h5>{% trans "Expense Breakdown" %}</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="expenseChart"></canvas>
@@ -176,7 +177,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Income Breakdown</h5>
+                        <h5>{% trans "Income Breakdown" %}</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="incomeChart"></canvas>
@@ -251,17 +252,17 @@
         <!-- Transactions Table -->
         <div class="card mt-4">
             <div class="card-header">
-                <h5>Transactions</h5>
+                <h5>{% trans "Transactions" %}</h5>
             </div>
             <div class="card-body">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Categories</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                            <th>Actions</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Categories" %}</th>
+                            <th>{% trans "Amount" %}</th>
+                            <th>{% trans "Description" %}</th>
+                            <th>{% trans "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -297,7 +298,7 @@
                                             '{{ transaction.description }}'
                                         )"
                                     >
-                                        Edit
+                                        {% trans "Edit" %}
                                     </button>
 
                                     <button
@@ -307,7 +308,7 @@
                                         data-bs-target="#deleteTransactionModal"
                                         onclick="setDeleteAction('{{ transaction.id }}')"
                                     >
-                                        Delete
+                                        {% trans "Delete" %}
                                     </button>
                                 </td>
                             </tr>
@@ -316,7 +317,6 @@
                 </table>
             </div>
         </div>
-
 
     {% include "modals/add_transaction_modal.html" %}
     {% include "modals/edit_transaction_modal.html" %}

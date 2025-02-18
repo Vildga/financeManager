@@ -21,6 +21,12 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
 
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('uk', 'Ukrainian'),
+    ]
+
+    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='en', verbose_name="Language")
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -28,3 +34,4 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
