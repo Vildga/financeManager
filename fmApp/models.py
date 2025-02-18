@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
+from fmApp.managers import TransactionManager
+
 
 class User(AbstractUser):
     class Meta:
@@ -53,6 +55,8 @@ class Transaction(models.Model):
     amount_in_uah = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
 
+    objects = models.Manager()
+    my_manager = TransactionManager()
 
     class Meta:
         ordering = ['-date']
