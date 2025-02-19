@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.conf import settings
 import re
+from django.utils.translation import activate
 
 
 class LoginRequiredMiddleware:
@@ -27,3 +28,17 @@ class LoginRequiredMiddleware:
             return redirect(settings.LOGIN_URL)
 
         return self.get_response(request)
+
+
+class LanguageMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            language = getattr(request.user, 'language', 'en')
+            activate(language)
+            request.session["django_language"] = language
+
+        response = self.get_response(request)
+        return response

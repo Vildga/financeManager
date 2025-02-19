@@ -60,7 +60,8 @@ urlpatterns = [
     path('about/', views.AboutView.as_view(), name='about'),
     path("users/", include("users.urls")),
     path("get-available-months/", views.AvailableMonthsView.as_view(), name="get_available_months"),
-
+    path("settings/", views.SettingsView.as_view(), name="settings"),
+    path('i18n/', include('django.conf.urls.i18n')),
 
 
     path("api/public/total-transactions/", api_public.TotalTransactionsAPIView.as_view(), name="api_total_transactions"),

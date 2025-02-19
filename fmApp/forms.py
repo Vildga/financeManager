@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Table, Category
-
+from users.models import CustomUser
 
 # class RegistrationForm(forms.ModelForm):
 #     password = forms.CharField(widget=forms.PasswordInput, label="Password")
@@ -32,3 +32,12 @@ class TransactionForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['date', 'type', 'amount']
+
+
+class LanguageForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['language']
+        widgets = {
+            'language': forms.Select(attrs={'class': 'form-select'})
+        }
