@@ -30,7 +30,7 @@
                         <label for="transactionCategory" class="form-label">{% trans "Category" %}</label>
                         <select class="form-select" id="transactionCategory" name="category_id" required>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" data-type="{{ category.type }}">{{ category.name }}</option>
+                                <option value="{{ category.id }}" data-type="{{ category.type }}">{% trans category.name %}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -96,8 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
     filterCategories();
 });
 
+
 function populateModal(id, date, type, categoryId, amount, currency, description) {
     console.log("populateModal called with:", { id, date, type, categoryId, amount, currency, description });
+
+    amount = amount.replace(",", ".");
 
     if (!currency || currency.trim() === "") {
         console.warn("Currency is empty! Setting default value: UAH");
@@ -111,18 +114,49 @@ function populateModal(id, date, type, categoryId, amount, currency, description
 
     const currencySelect = document.getElementById('transactionCurrency');
     if (currencySelect) {
-        console.log("Available currencies:", currencySelect.innerHTML);  // 🔹 Додаємо лог
-
         for (let option of currencySelect.options) {
-            console.log(`Checking option: ${option.value}`);  // 🔹 Дебаг
             if (option.value === currency) {
                 option.selected = true;
-                console.log(`Selected currency: ${currency}`);
                 break;
             }
         }
     } else {
         console.error("Currency select not found!");
     }
+
+    const transactionTypeSelect = document.getElementById('transactionType');
+    if (transactionTypeSelect) {
+        let found = false;
+        for (let option of transactionTypeSelect.options) {
+            if (option.value === type) {
+                option.selected = true;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            transactionTypeSelect.selectedIndex = 0;
+        }
+    } else {
+        console.error("Transaction type select not found!");
+    }
+
+    const categorySelect = document.getElementById('transactionCategory');
+    if (categorySelect) {
+        let found = false;
+        for (let option of categorySelect.options) {
+            if (option.value === categoryId) {
+                option.selected = true;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            categorySelect.selectedIndex = 0;
+        }
+    } else {
+        console.error("Category select not found!");
+    }
 }
 </script>
+

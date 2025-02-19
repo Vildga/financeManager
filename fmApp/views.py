@@ -24,9 +24,7 @@ from fmApp.utils import get_exchange_rate
 from decimal import Decimal
 from django.views.generic.edit import UpdateView
 from users.models import CustomUser
-from django.utils.translation import activate
-from django.utils.translation import gettext as _
-
+from django.utils.translation import activate, gettext as _, get_language
 
 MONTH_NAMES = {
     1: "January", 2: "February", 3: "March", 4: "April",
@@ -104,6 +102,10 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             .annotate(total=Sum("amount_in_uah"))
             .order_by("category__name")
         )
+
+        for summary in summaries:
+            summary["category__name"] = _(summary["category__name"])
+            summary["total"] = Decimal(str(summary["total"]).replace(",", "."))
 
         income_summary = [s for s in summaries if s["category__type"] == "income"]
         expense_summary = [s for s in summaries if s["category__type"] == "expense"]

@@ -1,7 +1,9 @@
+import string
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, get_language
 
 
 class User(AbstractUser):
@@ -21,6 +23,9 @@ class Category(models.Model):
     class Meta:
         unique_together = ('name', 'type')
         ordering = ['name']
+
+    def translated_name(self):
+        return _(self.name)
 
     def __str__(self):
         return f"{_(self.name)} ({_(self.get_type_display())})"

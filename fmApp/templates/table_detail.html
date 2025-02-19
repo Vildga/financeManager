@@ -188,64 +188,92 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const colors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                '#E57373', '#81C784', '#64B5F6', '#BA68C8', '#FFD54F', '#4DB6AC',
-                '#7986CB', '#A1887F', '#90A4AE', '#D32F2F', '#388E3C', '#1976D2',
-                '#7B1FA2', '#F57C00', '#C2185B', '#0097A7', '#5D4037', '#303F9F'
-            ];
+document.addEventListener('DOMContentLoaded', function () {
+    const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#E57373', '#81C784', '#64B5F6', '#BA68C8', '#FFD54F', '#4DB6AC',
+        '#7986CB', '#A1887F', '#90A4AE', '#D32F2F', '#388E3C', '#1976D2',
+        '#7B1FA2', '#F57C00', '#C2185B', '#0097A7', '#5D4037', '#303F9F'
+    ];
 
-            function getColors(count) {
-                return colors.slice(0, count);
+    function getColors(count) {
+        return colors.slice(0, count);
+    }
+
+    // 🚀 Виводимо вихідні дані перед створенням графіка
+    const expenseLabels = [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}];
+    const expenseValues = [{% for expense in expense_summary %}{{ expense.total }},{% endfor %}];
+
+    const incomeLabels = [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}];
+    const incomeValues = [{% for income in income_summary %}{{ income.total }},{% endfor %}];
+
+    console.log("Expense Labels:", expenseLabels);
+    console.log("Expense Values:", expenseValues);
+    console.log("Income Labels:", incomeLabels);
+    console.log("Income Values:", incomeValues);
+
+    // Перевіряємо, чи немає undefined або NaN
+    function validateData(values, labels) {
+        return values.map((value, index) => ({
+            label: labels[index] || "Unknown",
+            value: isNaN(value) ? 0 : value
+        }));
+    }
+
+    const validExpenseData = validateData(expenseValues, expenseLabels);
+    const validIncomeData = validateData(incomeValues, incomeLabels);
+
+    console.log("Validated Expense Data:", validExpenseData);
+    console.log("Validated Income Data:", validIncomeData);
+
+        const expenseData = {
+            labels: [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for expense in expense_summary %}parseFloat('{{ expense.total }}'.replace(",", ".")),{% endfor %}],
+                backgroundColor: getColors({{ expense_summary|length }}),
+                hoverBackgroundColor: getColors({{ expense_summary|length }})
+            }]
+        };
+
+        const incomeData = {
+            labels: [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for income in income_summary %}parseFloat('{{ income.total }}'.replace(",", ".")),{% endfor %}],
+                backgroundColor: getColors({{ income_summary|length }}),
+                hoverBackgroundColor: getColors({{ income_summary|length }})
+            }]
+        };
+
+
+    const expenseConfig = {
+        type: 'pie',
+        data: expenseData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
             }
+        }
+    };
 
-            const expenseData = {
-                labels: [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}],
-                datasets: [{
-                    data: [{% for expense in expense_summary %}{{ expense.total }},{% endfor %}],
-                    backgroundColor: getColors({{ expense_summary|length }}),
-                    hoverBackgroundColor: getColors({{ expense_summary|length }})
-                }]
-            };
+    const incomeConfig = {
+        type: 'pie',
+        data: incomeData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    };
 
-            const expenseConfig = {
-                type: 'pie',
-                data: expenseData,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    }
-                }
-            };
+    const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+    new Chart(expenseCtx, expenseConfig);
 
-            const incomeData = {
-                labels: [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}],
-                datasets: [{
-                    data: [{% for income in income_summary %}{{ income.total }},{% endfor %}],
-                    backgroundColor: getColors({{ income_summary|length }}),
-                    hoverBackgroundColor: getColors({{ income_summary|length }})
-                }]
-            };
+    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+    new Chart(incomeCtx, incomeConfig);
+});
 
-            const incomeConfig = {
-                type: 'pie',
-                data: incomeData,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    }
-                }
-            };
-
-            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-            new Chart(expenseCtx, expenseConfig);
-
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            new Chart(incomeCtx, incomeConfig);
-        });
     </script>
 
 
@@ -271,7 +299,7 @@
                                 <td>{{ transaction.date }}</td>
                                 <td>
                                     {% for category in transaction.category.all %}
-                                        <span>{{ category.name }}</span>
+                                        <span>{% trans category.name %}</span>
                                     {% endfor %}
                                 </td>
                                 <td>
@@ -291,7 +319,7 @@
                                         onclick="populateModal(
                                             '{{ transaction.id }}',
                                             '{{ transaction.date|date:"Y-m-d" }}',
-                                            '{{ transaction.type }}',
+                                            '{{ transaction.category.first.type }}',
                                             '{{ transaction.category.first.id }}',
                                             '{{ transaction.amount }}',
                                             '{{ transaction.currency }}',

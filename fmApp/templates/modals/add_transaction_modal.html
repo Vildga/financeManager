@@ -25,7 +25,7 @@
                         <label for="transaction-category" class="form-label">{% trans "Category" %}</label>
                         <select class="form-select" id="transaction-category" name="category" required>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" data-type="{{ category.type }}">{{ category.name }}</option>
+                                <option value="{{ category.id }}" data-type="{{ category.type }}">{% trans category.name %}</option>
                             {% endfor %}
                         </select>
                     </div>
