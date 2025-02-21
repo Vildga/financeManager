@@ -277,74 +277,117 @@ document.addEventListener('DOMContentLoaded', function () {
     </script>
 
 
-        <!-- Transactions Table -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5>{% trans "Transactions" %}</h5>
-            </div>
-            <div class="card-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>{% trans "Date" %}</th>
-                            <th>{% trans "Categories" %}</th>
-                            <th>{% trans "Amount" %}</th>
-                            <th>{% trans "Description" %}</th>
-                            <th>{% trans "Actions" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                            <tr>
-                                <td>{{ transaction.date }}</td>
-                                <td>
-                                    {% for category in transaction.category.all %}
-                                        <span>{% trans category.name %}</span>
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% if transaction.currency == "UAH" %}
-                                        {{ transaction.amount }} UAH
-                                    {% else %}
-                                        {{ transaction.amount }} {{ transaction.currency }} ↔ {{ transaction.amount_in_uah }} UAH
-                                    {% endif %}
-                                </td>
-                                <td>{{ transaction.description }}</td>
-                                <td>
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-custom-yellow"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editTransactionModal"
-                                        onclick="populateModal(
-                                            '{{ transaction.id }}',
-                                            '{{ transaction.date|date:"Y-m-d" }}',
-                                            '{{ transaction.category.first.type }}',
-                                            '{{ transaction.category.first.id }}',
-                                            '{{ transaction.amount }}',
-                                            '{{ transaction.currency }}',
-                                            '{{ transaction.description }}'
-                                        )"
-                                    >
-                                        {% trans "Edit" %}
-                                    </button>
+   <div class="card mt-4">
+    <div class="card-header">
+        <h5>{% trans "Transactions" %}</h5>
+    </div>
+    <div class="card-body">
 
-                                    <button
-                                        type="button"
-                                        class="btn btn-danger btn-sm"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteTransactionModal"
-                                        onclick="setDeleteAction('{{ transaction.id }}')"
-                                    >
-                                        {% trans "Delete" %}
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <!-- Поле для пошуку -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="form-control" placeholder="{% trans 'Search by description' %}" onkeyup="searchTable()">
         </div>
+
+        <table class="table transaction-table" id="transactionTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">{% trans "Date" %} ▲▼</th>
+                    <th>{% trans "Categories" %}</th>
+                    <th onclick="sortTable(2, true)">{% trans "Amount" %} ▲▼</th>
+                    <th>{% trans "Description" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr class="transaction-row {% if transaction.category.first.type == 'income' %}income{% else %}expense{% endif %}">
+                        <td>{{ transaction.date }}</td>
+                        <td>
+                            {% for category in transaction.category.all %}
+                                <span>{% trans category.name %}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if transaction.currency == "UAH" %}
+                                {{ transaction.amount }} UAH
+                            {% else %}
+                                {{ transaction.amount }} {{ transaction.currency }} ↔ {{ transaction.amount_in_uah }} UAH
+                            {% endif %}
+                        </td>
+                        <td class="description">{{ transaction.description }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-custom-yellow"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editTransactionModal"
+                                    onclick="populateModal(
+                                        '{{ transaction.id }}',
+                                        '{{ transaction.date|date:"Y-m-d" }}',
+                                        '{{ transaction.category.first.type }}',
+                                        '{{ transaction.category.first.id }}',
+                                        '{{ transaction.amount }}',
+                                        '{{ transaction.currency }}',
+                                        '{{ transaction.description }}'
+                                    )">
+                                {% trans "Edit" %}
+                            </button>
+
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteTransactionModal"
+                                    onclick="setDeleteAction('{{ transaction.id }}')">
+                                {% trans "Delete" %}
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function sortTable(columnIndex, isNumeric = false) {
+        let table = document.getElementById("transactionTable");
+        let tbody = table.getElementsByTagName("tbody")[0];
+        let rows = Array.from(tbody.getElementsByTagName("tr"));
+
+        let ascending = table.dataset.sortOrder !== "asc";
+        table.dataset.sortOrder = ascending ? "asc" : "desc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.getElementsByTagName("td")[columnIndex].textContent.trim();
+            let cellB = rowB.getElementsByTagName("td")[columnIndex].textContent.trim();
+
+            if (isNumeric) {
+                cellA = parseFloat(cellA.replace(/[^0-9.-]+/g, "")) || 0;
+                cellB = parseFloat(cellB.replace(/[^0-9.-]+/g, "")) || 0;
+            }
+
+            if (cellA < cellB) return ascending ? -1 : 1;
+            if (cellA > cellB) return ascending ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("transactionTable");
+        let rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+        for (let row of rows) {
+            let descriptionCell = row.getElementsByClassName("description")[0];
+            let descriptionText = descriptionCell.textContent.toLowerCase();
+
+            if (descriptionText.includes(input)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+</script>
 
     {% include "modals/add_transaction_modal.html" %}
     {% include "modals/edit_transaction_modal.html" %}
