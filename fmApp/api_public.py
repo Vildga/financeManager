@@ -1,18 +1,14 @@
-from xmlrpc.client import INVALID_XMLRPC
-
-from django.db.models import Sum, Avg, F
-from django.db.models.functions import TruncMonth
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+
 from fmApp.models import Transaction
 from fmApp.serializers import (
-    TotalTransactionsSerializer,
     AverageExpenseByCategorySerializer,
     ExpensesByMonthSerializer,
     ExpenseShareByCategorySerializer,
-    IncomeExpenseTrendSerializer
+    IncomeExpenseTrendSerializer,
+    TotalTransactionsSerializer,
 )
 
 
@@ -35,12 +31,11 @@ class AverageExpenseByCategoryAPIView(APIView):
     @swagger_auto_schema(
         operation_summary="Середні витрати по категоріях",
         operation_description="Повертає середню суму витрат на кожну категорію в UAH.",
-        responses={200: AverageExpenseByCategorySerializer()}
+        responses={200: AverageExpenseByCategorySerializer()},
     )
     def get(self, request):
         expenses = Transaction.my_manager.get_average_expense_by_category()
         return Response(AverageExpenseByCategorySerializer(expenses, many=True).data)
-
 
 
 class ExpensesByMonthAPIView(APIView):
@@ -66,7 +61,9 @@ class ExpenseShareByCategoryAPIView(APIView):
     )
     def get(self, request):
         category_shares = Transaction.my_manager.get_expense_share_by_category()
-        return Response(ExpenseShareByCategorySerializer(category_shares, many=True).data)
+        return Response(
+            ExpenseShareByCategorySerializer(category_shares, many=True).data
+        )
 
 
 class IncomeExpenseTrendAPIView(APIView):

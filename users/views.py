@@ -1,10 +1,11 @@
-from django.urls import reverse_lazy
-from django.contrib.auth import login, authenticate, get_backends
+from django.contrib.auth import authenticate, get_backends, login
 from django.contrib.auth.views import LoginView, LogoutView
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.views.generic import CreateView
+
 from .forms import CustomUserCreationForm, CustomUserLoginForm
 from .models import CustomUser
-from django.shortcuts import redirect, render
 
 
 class CustomRegisterView(CreateView):
@@ -16,7 +17,10 @@ class CustomRegisterView(CreateView):
     def form_valid(self, form):
         user = form.save()
 
-        backend = next((b for b in get_backends() if isinstance(b, get_backends()[0].__class__)), None)
+        backend = next(
+            (b for b in get_backends() if isinstance(b, get_backends()[0].__class__)),
+            None,
+        )
 
         if backend:
             user.backend = f"{backend.__module__}.{backend.__class__.__name__}"

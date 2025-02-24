@@ -6,61 +6,67 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fmApp', '0001_initial'),
+        ("fmApp", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'ordering': ['name']},
+            name="category",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='table',
-            options={'ordering': ['name']},
+            name="table",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='transaction',
-            options={'ordering': ['-date']},
+            name="transaction",
+            options={"ordering": ["-date"]},
         ),
         migrations.RemoveField(
-            model_name='transaction',
-            name='type',
+            model_name="transaction",
+            name="type",
         ),
         migrations.AlterField(
-            model_name='category',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Назва категорії'),
+            model_name="category",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Назва категорії"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='type',
-            field=models.CharField(choices=[('income', 'Дохід'), ('expense', 'Витрата')], max_length=10, verbose_name='Тип категорії'),
+            model_name="category",
+            name="type",
+            field=models.CharField(
+                choices=[("income", "Дохід"), ("expense", "Витрата")],
+                max_length=10,
+                verbose_name="Тип категорії",
+            ),
         ),
         migrations.AlterField(
-            model_name='table',
-            name='description',
-            field=models.TextField(blank=True, null=True, verbose_name='Опис'),
+            model_name="table",
+            name="description",
+            field=models.TextField(blank=True, null=True, verbose_name="Опис"),
         ),
         migrations.AlterField(
-            model_name='table',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Назва таблиці'),
+            model_name="table",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Назва таблиці"),
         ),
         migrations.RemoveField(
-            model_name='transaction',
-            name='category',
+            model_name="transaction",
+            name="category",
         ),
         migrations.AlterUniqueTogether(
-            name='category',
-            unique_together={('name', 'type')},
+            name="category",
+            unique_together={("name", "type")},
         ),
         migrations.RemoveField(
-            model_name='category',
-            name='table',
+            model_name="category",
+            name="table",
         ),
         migrations.AddField(
-            model_name='transaction',
-            name='category',
-            field=models.ManyToManyField(related_name='transactions', to='fmApp.category'),
+            model_name="transaction",
+            name="category",
+            field=models.ManyToManyField(
+                related_name="transactions", to="fmApp.category"
+            ),
         ),
     ]

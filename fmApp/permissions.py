@@ -1,6 +1,8 @@
-from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+
 from .models import Table
+
 
 class IsTableOwnerMixin:
 
