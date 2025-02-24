@@ -1,41 +1,42 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block head %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Finance Manager</title>
+    <title>{% trans "About Finance Manager" %}</title>
     <link rel="stylesheet" href="{% static 'about.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
-
 {% block content %}
     <!-- Main Content -->
     <div class="about-container">
-        <h1>About Finance Manager</h1>
+        <h1>{% trans "About Finance Manager" %}</h1>
         <p>
-            Welcome to <strong>Finance Manager</strong> — a simple and convenient tool for managing your personal finances.
-            Track your expenses, categorize your transactions, and make smarter financial decisions!
+            {% blocktrans %}
+                Welcome to Finance Manager — a simple and convenient tool for managing your personal finances.
+                Track your expenses, categorize your transactions, and make smarter financial decisions!
+            {% endblocktrans %}
         </p>
 
-        <h3>Need Help?</h3>
+        <h3>{% trans "Need Help?" %}</h3>
         <p>
-            If you have any questions or need assistance, feel free to contact our support team.
-            Click the link below to get in touch with us on Telegram:
+            {% trans "If you have any questions or need assistance, feel free to contact our support team." %}
+            {% trans "Click the link below to get in touch with us on Telegram:" %}
         </p>
         <a href="https://t.me/vildga_support" target="_blank" class="support-link">
-            👉 Contact Support
+            👉 {% trans "Contact Support" %}
         </a>
 
-        <h3>Join Our Community</h3>
+        <h3>{% trans "Join Our Community" %}</h3>
         <p>
-            Stay updated with the latest news, tips, and feature releases by joining our Telegram group:
+            {% trans "Stay updated with the latest news, tips, and feature releases by joining our Telegram group:" %}
         </p>
         <a href="https://t.me/FinanceManagerDigest" target="_blank" class="community-link">
-            👉 Join Finance Manager Digest
+            👉 {% trans "Join Finance Manager Digest" %}
         </a>
     </div>
-
-{% endblock %}>
+{% endblock %}

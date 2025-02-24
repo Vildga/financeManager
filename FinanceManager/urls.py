@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from fmApp import views
 # from fmApp.api_views import *
 from rest_framework_simplejwt.views import (
@@ -27,6 +27,25 @@ from rest_framework_simplejwt.views import (
 )
 from fmApp import api_views
 from fmApp.views import custom_404_view
+from fmApp import api_public
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Public Finance API",
+        default_version='v1',
+        description="Документація публічних API для аналітики витрат та доходів",
+        terms_of_service="https://www.example.com/terms/",
+        contact=openapi.Contact(email="support@example.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,8 +60,20 @@ urlpatterns = [
     path('about/', views.AboutView.as_view(), name='about'),
     path("users/", include("users.urls")),
     path("get-available-months/", views.AvailableMonthsView.as_view(), name="get_available_months"),
+    path("settings/", views.SettingsView.as_view(), name="settings"),
+    path('i18n/', include('django.conf.urls.i18n')),
 
 
+    path("api/public/total-transactions/", api_public.TotalTransactionsAPIView.as_view(), name="api_total_transactions"),
+    path("api/public/average-expense-by-category/", api_public.AverageExpenseByCategoryAPIView.as_view(), name="api_average_expense"),
+    path("api/public/expenses-by-month/", api_public.ExpensesByMonthAPIView.as_view(), name="api_expenses_by_month"),
+    path("api/public/expense-share-by-category/", api_public.ExpenseShareByCategoryAPIView.as_view(), name="api_expense_share"),
+    path("api/public/income-expense-trend/", api_public.IncomeExpenseTrendAPIView.as_view(), name="api_income_expense_trend"),
+
+
+    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    re_path(r'^swagger\.json$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 
     # API URLS
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

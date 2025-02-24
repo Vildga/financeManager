@@ -1,6 +1,11 @@
+import string
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _, get_language
+
+from fmApp.managers import TransactionManager
 
 
 class User(AbstractUser):
@@ -11,18 +16,21 @@ class User(AbstractUser):
 class Category(models.Model):
 
     class TypeChoices(models.TextChoices):
-        INCOME = "income", "Дохід"
-        EXPENSE = "expense", "Витрата"
+        INCOME = "income", _("Income")
+        EXPENSE = "expense", _("Expense")
 
-    name = models.CharField(max_length=100, verbose_name="Назва категорії")
-    type = models.CharField(max_length=10, choices=TypeChoices.choices, verbose_name="Тип категорії")
+    name = models.CharField(max_length=100, verbose_name=_("Category Name"))
+    type = models.CharField(max_length=10, choices=TypeChoices.choices, verbose_name=_("Category Type"))
 
     class Meta:
         unique_together = ('name', 'type')
         ordering = ['name']
 
+    def translated_name(self):
+        return _(self.name)
+
     def __str__(self):
-        return f"{self.name} ({self.type})"
+        return f"{_(self.name)} ({_(self.get_type_display())})"
 
 
 class Table(models.Model):
@@ -53,6 +61,8 @@ class Transaction(models.Model):
     amount_in_uah = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
 
+    objects = models.Manager()
+    my_manager = TransactionManager()
 
     class Meta:
         ordering = ['-date']
