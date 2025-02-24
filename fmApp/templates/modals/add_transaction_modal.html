@@ -53,29 +53,43 @@
         </div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const transactionType = document.getElementById('transaction-type');
-            const transactionCategory = document.getElementById('transaction-category');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const transactionType = document.getElementById('transaction-type');
+        const transactionCategory = document.getElementById('transaction-category');
+        const transactionDate = document.getElementById('transaction-date');
+        const transactionForm = document.querySelector('form');
 
-            // Function to filter categories based on the selected type
-            function filterCategories() {
-                const selectedType = transactionType.value;
-                const options = transactionCategory.querySelectorAll('option');
+        function validateDate(event) {
+            const selectedDate = new Date(transactionDate.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-                options.forEach(option => {
-                    if (option.dataset.type === selectedType) {
-                        option.style.display = 'block';
-                    } else {
-                        option.style.display = 'none';
-                    }
-                });
-
-                transactionCategory.value = '';
+            if (selectedDate > today) {
+                event.preventDefault();
+                alert("The exchange rate for this date is not available.");
+                transactionDate.value = "";
             }
+        }
 
-            transactionType.addEventListener('change', filterCategories);
+        function filterCategories() {
+            const selectedType = transactionType.value;
+            const options = transactionCategory.querySelectorAll('option');
 
-            filterCategories();
-        });
-    </script>
+            options.forEach(option => {
+                if (option.dataset.type === selectedType) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            transactionCategory.value = '';
+        }
+
+        transactionType.addEventListener('change', filterCategories);
+        transactionForm.addEventListener('submit', validateDate);
+
+        filterCategories();
+    });
+</script>
