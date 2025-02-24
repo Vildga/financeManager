@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-19 00:16+0200\n"
+"POT-Creation-Date: 2025-02-21 15:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,23 +21,23 @@ msgstr ""
 "100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
 "(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 
-#: fmApp/models.py:15 fmApp/templates/modals/add_transaction_modal.html:20
+#: fmApp/models.py:19 fmApp/templates/modals/add_transaction_modal.html:20
 #: fmApp/templates/modals/edit_transaction_modal.html:24
 msgid "Income"
 msgstr "Дохід"
 
-#: fmApp/models.py:16 fmApp/templates/modals/add_transaction_modal.html:21
+#: fmApp/models.py:20 fmApp/templates/modals/add_transaction_modal.html:21
 #: fmApp/templates/modals/edit_transaction_modal.html:25
 msgid "Expense"
 msgstr "Витрата"
 
-#: fmApp/models.py:18
+#: fmApp/models.py:22
 #, fuzzy
 #| msgid "Category"
 msgid "Category Name"
 msgstr "Категорія"
 
-#: fmApp/models.py:19
+#: fmApp/models.py:23
 #, fuzzy
 #| msgid "Category"
 msgid "Category Type"
@@ -141,7 +141,7 @@ msgstr "Створити таблицю"
 #: fmApp/templates/home.html:38
 #: fmApp/templates/modals/delete_table_modal.html:19
 #: fmApp/templates/modals/delete_transaction_modal.html:17
-#: fmApp/templates/table_detail.html:311
+#: fmApp/templates/table_detail.html:336
 msgid "Delete"
 msgstr "Видалити"
 
@@ -214,7 +214,7 @@ msgid "Sign up"
 msgstr ""
 
 #: fmApp/templates/modals/add_transaction_modal.html:7
-#: fmApp/templates/modals/add_transaction_modal.html:48
+#: fmApp/templates/modals/add_transaction_modal.html:49
 #: fmApp/templates/table_detail.html:24
 msgid "Add Transaction"
 msgstr "Додати транзакцію"
@@ -229,25 +229,30 @@ msgstr "Закрити"
 
 #: fmApp/templates/modals/add_transaction_modal.html:14
 #: fmApp/templates/modals/edit_transaction_modal.html:17
-#: fmApp/templates/table_detail.html:261
+#: fmApp/templates/table_detail.html:292
 msgid "Date"
 msgstr "Дата"
 
 #: fmApp/templates/modals/add_transaction_modal.html:18
-#: fmApp/templates/modals/add_transaction_modal.html:25
 #: fmApp/templates/modals/edit_transaction_modal.html:22
 msgid "Type"
 msgstr "Тип"
 
-#: fmApp/templates/modals/add_transaction_modal.html:33
+#: fmApp/templates/modals/add_transaction_modal.html:25
+#: fmApp/templates/modals/edit_transaction_modal.html:30
+#: fmApp/templates/table_detail.html:110 fmApp/templates/table_detail.html:141
+msgid "Category"
+msgstr "Категорія"
+
+#: fmApp/templates/modals/add_transaction_modal.html:34
 #: fmApp/templates/modals/edit_transaction_modal.html:39
-#: fmApp/templates/table_detail.html:263
+#: fmApp/templates/table_detail.html:294
 msgid "Amount"
 msgstr "Сума"
 
-#: fmApp/templates/modals/add_transaction_modal.html:44
+#: fmApp/templates/modals/add_transaction_modal.html:45
 #: fmApp/templates/modals/edit_transaction_modal.html:54
-#: fmApp/templates/table_detail.html:264
+#: fmApp/templates/table_detail.html:295
 msgid "Description"
 msgstr "Опис"
 
@@ -284,11 +289,6 @@ msgstr "Ви впевнені, що хочете видалити цю тран�
 #: fmApp/templates/modals/edit_transaction_modal.html:8
 msgid "Edit Transaction"
 msgstr "Додати транзакцію"
-
-#: fmApp/templates/modals/edit_transaction_modal.html:30
-#: fmApp/templates/table_detail.html:110 fmApp/templates/table_detail.html:141
-msgid "Category"
-msgstr "Категорія"
 
 #: fmApp/templates/modals/edit_transaction_modal.html:60
 msgid "Save Changes"
@@ -370,35 +370,41 @@ msgstr "Розподіл витрат"
 msgid "Income Breakdown"
 msgstr "Розподіл доходів"
 
-#: fmApp/templates/table_detail.html:255
+#: fmApp/templates/table_detail.html:282
 msgid "Transactions"
 msgstr "Транзакції"
 
-#: fmApp/templates/table_detail.html:262
+#: fmApp/templates/table_detail.html:287
+#, fuzzy
+#| msgid "Table Description"
+msgid "Search by description"
+msgstr "Опис таблиці"
+
+#: fmApp/templates/table_detail.html:293
 msgid "Categories"
 msgstr "Категорії"
 
-#: fmApp/templates/table_detail.html:265
+#: fmApp/templates/table_detail.html:296
 msgid "Actions"
 msgstr "Дії"
 
-#: fmApp/templates/table_detail.html:301
+#: fmApp/templates/table_detail.html:329
 msgid "Edit"
 msgstr "Редагувати"
 
-#: fmApp/views.py:173
+#: fmApp/views.py:164
 msgid "You must select at least one category."
 msgstr "Ви повинні обрати принаймні одну категорію."
 
-#: fmApp/views.py:179
+#: fmApp/views.py:170
 msgid "Selected categories do not exist."
 msgstr "Вибрані категорії не існують."
 
-#: fmApp/views.py:186
+#: fmApp/views.py:177
 msgid "Failed to retrieve exchange rate. Please try again."
 msgstr "Не вдалося отримати курс обміну. Будь ласка, спробуйте ще раз."
 
-#: fmApp/views.py:203
+#: fmApp/views.py:194
 msgid "Transaction added successfully."
 msgstr "Транзакцію успішно додано."
 
