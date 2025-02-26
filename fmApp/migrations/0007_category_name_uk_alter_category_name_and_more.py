@@ -6,24 +6,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fmApp', '0006_alter_category_name_alter_category_type_and_more'),
+        ("fmApp", "0006_alter_category_name_alter_category_type_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='category',
-            name='name_uk',
-            field=models.CharField(default='default_value', max_length=100, verbose_name='Category Name UK'),
+            model_name="category",
+            name="name_uk",
+            field=models.CharField(
+                default="default_value", max_length=100, verbose_name="Category Name UK"
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='category',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Category Name'),
+            model_name="category",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Category Name"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='type',
-            field=models.CharField(choices=[('income', 'Income'), ('expense', 'Expense')], max_length=10, verbose_name='Category Type'),
+            model_name="category",
+            name="type",
+            field=models.CharField(
+                choices=[("income", "Income"), ("expense", "Expense")],
+                max_length=10,
+                verbose_name="Category Type",
+            ),
         ),
     ]

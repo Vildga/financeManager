@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Sum, Avg, F
+from django.db.models import Avg, F, Sum
 from django.db.models.functions import TruncMonth
 
 
@@ -9,8 +9,12 @@ class TransactionManager(models.Manager):
         """Загальна суму доходів і витрат у гривнях"""
 
         return self.get_queryset().aggregate(
-            total_income=Sum("amount_in_uah", filter=models.Q(category__type="income")) or 0,
-            total_expense=Sum("amount_in_uah", filter=models.Q(category__type="expense")) or 0
+            total_income=Sum("amount_in_uah", filter=models.Q(category__type="income"))
+            or 0,
+            total_expense=Sum(
+                "amount_in_uah", filter=models.Q(category__type="expense")
+            )
+            or 0,
         )
 
     def get_average_expense_by_category(self):
@@ -23,7 +27,6 @@ class TransactionManager(models.Manager):
             .annotate(avg_expense=Avg("amount_in_uah"))
             .order_by("-avg_expense")
         )
-
 
     def get_expenses_by_month(self):
         """Загальна сума витрат по місяцях"""
@@ -40,9 +43,12 @@ class TransactionManager(models.Manager):
     def get_expense_share_by_category(self):
         """Частка витрат по категоріях"""
 
-        total_expense = self.get_queryset().filter(category__type="expense").aggregate(
-            total=Sum("amount_in_uah")
-        )["total"] or 1
+        total_expense = (
+            self.get_queryset()
+            .filter(category__type="expense")
+            .aggregate(total=Sum("amount_in_uah"))["total"]
+            or 1
+        )
 
         return (
             self.get_queryset()
@@ -64,7 +70,15 @@ class TransactionManager(models.Manager):
             .order_by("month")
         )
 
-        income_trend = {t["month"].strftime("%Y-%m"): t["total"] for t in trends if t["category__type"] == "income"}
-        expense_trend = {t["month"].strftime("%Y-%m"): t["total"] for t in trends if t["category__type"] == "expense"}
+        income_trend = {
+            t["month"].strftime("%Y-%m"): t["total"]
+            for t in trends
+            if t["category__type"] == "income"
+        }
+        expense_trend = {
+            t["month"].strftime("%Y-%m"): t["total"]
+            for t in trends
+            if t["category__type"] == "expense"
+        }
 
         return {"income_trend": income_trend, "expense_trend": expense_trend}

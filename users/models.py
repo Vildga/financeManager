@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email or email.strip() == "":
@@ -13,25 +14,27 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, password, **extra_fields)
+
 
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
 
     LANGUAGE_CHOICES = [
-        ('en', 'English'),
-        ('uk', 'Ukrainian'),
+        ("en", "English"),
+        ("uk", "Ukrainian"),
     ]
 
-    language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='en', verbose_name="Language")
+    language = models.CharField(
+        max_length=10, choices=LANGUAGE_CHOICES, default="en", verbose_name="Language"
+    )
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.email
-

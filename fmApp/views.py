@@ -1,45 +1,55 @@
-from django.shortcuts import render, redirect, reverse
-from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.forms import AuthenticationForm
-# from .forms import RegistrationForm
-from django.utils import timezone
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, JsonResponse, HttpResponseForbidden
-from django.contrib.auth.decorators import login_required
-from .forms import TableForm, LanguageForm
-from .models import Table
-from django.shortcuts import render, get_object_or_404
-from .models import Table, Category, Transaction
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, DetailView
-from django.urls import reverse_lazy
-from django.views.generic import CreateView
-from django.views import View
-from .permissions import IsTableOwnerMixin
-from django.db.models import Sum, Case, When, Value, DecimalField, F
-from django.db import transaction
-from django.utils.timezone import now
-from django.db.models.functions import ExtractYear, ExtractMonth
-from fmApp.utils import get_exchange_rate
 from decimal import Decimal
+
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import ExtractMonth, ExtractYear
+from django.http import (
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.urls import reverse_lazy
+
+from django.utils.timezone import now
+from django.utils.translation import activate
+from django.utils.translation import gettext as _
+from django.views import View
+from django.views.generic import CreateView, DetailView, TemplateView
 from django.views.generic.edit import UpdateView
+
+from fmApp.utils import get_exchange_rate
 from users.models import CustomUser
-from django.utils.translation import activate, gettext as _, get_language
+
+from .forms import LanguageForm, TableForm
+from .models import Category, Table, Transaction
+from .permissions import IsTableOwnerMixin
 
 MONTH_NAMES = {
-    1: "January", 2: "February", 3: "March", 4: "April",
-    5: "May", 6: "June", 7: "July", 8: "August",
-    9: "September", 10: "October", 11: "November", 12: "December"
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December",
 }
 
 
 class HomeView(TemplateView):
-    template_name = 'home.html'
+    template_name = "home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tables'] = Table.objects.filter(user=self.request.user)
-        context['form'] = TableForm()
+        context["tables"] = Table.objects.filter(user=self.request.user)
+        context["form"] = TableForm()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -48,15 +58,15 @@ class HomeView(TemplateView):
             table = form.save(commit=False)
             table.user = request.user
             table.save()
-            return redirect('home')
+            return redirect("home")
         return self.get(request, *args, **kwargs)
 
 
 class TableCreateView(CreateView):
     model = Table
     form_class = TableForm
-    template_name = 'modals/add_transaction_modal.html'
-    success_url = reverse_lazy('home')
+    template_name = "modals/add_transaction_modal.html"
+    success_url = reverse_lazy("home")
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -65,40 +75,45 @@ class TableCreateView(CreateView):
 
 class TableDeleteView(View):
     def post(self, request, *args, **kwargs):
-        table_id = request.POST.get('table_id')
+        table_id = request.POST.get("table_id")
         if not table_id:
             return HttpResponseForbidden("Table ID is missing.")
 
         table = get_object_or_404(Table, id=table_id, user=request.user)
         table.delete()
-        return redirect('home')
+        return redirect("home")
 
 
 class TableDetailView(IsTableOwnerMixin, DetailView):
     model = Table
-    template_name = 'table_detail.html'
-    context_object_name = 'table'
-    pk_url_kwarg = 'table_id'
+    template_name = "table_detail.html"
+    context_object_name = "table"
+    pk_url_kwarg = "table_id"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         table = self.get_object()
 
-        selected_month = self.request.GET.get('month')
-        selected_year = self.request.GET.get('year')
+        selected_month = self.request.GET.get("month")
+        selected_year = self.request.GET.get("year")
 
-        selected_month = int(selected_month) if selected_month and selected_month.isdigit() else now().month
-        selected_year = int(selected_year) if selected_year and selected_year.isdigit() else now().year
-
-        transactions = (
-            Transaction.objects
-            .filter(table=table, date__year=selected_year, date__month=selected_month)
-            .prefetch_related("category")
+        selected_month = (
+            int(selected_month)
+            if selected_month and selected_month.isdigit()
+            else now().month
+        )
+        selected_year = (
+            int(selected_year)
+            if selected_year and selected_year.isdigit()
+            else now().year
         )
 
+        transactions = Transaction.objects.filter(
+            table=table, date__year=selected_year, date__month=selected_month
+        ).prefetch_related("category")
+
         summaries = (
-            transactions
-            .values("category__name", "category__type")
+            transactions.values("category__name", "category__type")
             .annotate(total=Sum("amount_in_uah"))
             .order_by("category__name")
         )
@@ -112,39 +127,48 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
 
         totals = {
             "income": sum(s["total"] for s in income_summary),
-            "expense": sum(s["total"] for s in expense_summary)
+            "expense": sum(s["total"] for s in expense_summary),
         }
 
         available_years_months = (
-            Transaction.objects
-            .filter(table=table)
+            Transaction.objects.filter(table=table)
             .annotate(year=ExtractYear("date"), month=ExtractMonth("date"))
             .values("year", "month")
             .distinct()
             .order_by("-year", "month")
-
         )
 
-        available_years = sorted(set(item["year"] for item in available_years_months), reverse=True)
+        available_years = sorted(
+            set(item["year"] for item in available_years_months), reverse=True
+        )
         available_months = sorted(
-            set(item["month"] for item in available_years_months if item["year"] == selected_year))
-        available_months = [{"month": m, "month_name": MONTH_NAMES[m]} for m in available_months]
+            set(
+                item["month"]
+                for item in available_years_months
+                if item["year"] == selected_year
+            )
+        )
+        available_months = [
+            {"month": m, "month_name": MONTH_NAMES[m]} for m in available_months
+        ]
 
-        context.update({
-            "transactions": transactions,
-            "categories": Category.objects.all(),
-            "expense_summary": expense_summary,
-            "income_summary": income_summary,
-            "total_income": totals["income"],
-            "total_expense": totals["expense"],
-            "net_total": totals["income"] - totals["expense"],
-            "selected_month": selected_month,
-            "selected_year": selected_year,
-            "available_months": available_months,
-            "available_years": available_years,
-            "month_names": MONTH_NAMES,
-            "currency_choices": Transaction.CurrencyChoices.choices,
-        })
+        context.update(
+            {
+                "transactions": transactions,
+                "categories": Category.objects.all(),
+                "expense_summary": expense_summary,
+                "income_summary": income_summary,
+                "total_income": totals["income"],
+                "total_expense": totals["expense"],
+                "net_total": totals["income"] - totals["expense"],
+                "selected_month": selected_month,
+                "selected_year": selected_year,
+                "available_months": available_months,
+                "available_years": available_years,
+                "month_names": MONTH_NAMES,
+                "currency_choices": Transaction.CurrencyChoices.choices,
+            }
+        )
 
         return context
 
@@ -162,20 +186,22 @@ class AddTransactionView(IsTableOwnerMixin, View):
 
         if not category_ids:
             messages.error(request, _("You must select at least one category."))
-            return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
+            return redirect(reverse("table_detail", kwargs={"table_id": table.id}))
 
         categories = list(Category.objects.filter(id__in=category_ids))
 
         if not categories:
             messages.error(request, _("Selected categories do not exist."))
-            return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
+            return redirect(reverse("table_detail", kwargs={"table_id": table.id}))
 
         with transaction.atomic():
             exchange_rate = Decimal(get_exchange_rate(currency, transaction_date))
 
             if exchange_rate is None:
-                messages.error(request, _("Failed to retrieve exchange rate. Please try again."))
-                return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
+                messages.error(
+                    request, _("Failed to retrieve exchange rate. Please try again.")
+                )
+                return redirect(reverse("table_detail", kwargs={"table_id": table.id}))
 
             amount_decimal = Decimal(amount)
             amount_in_uah = amount_decimal * exchange_rate
@@ -187,36 +213,39 @@ class AddTransactionView(IsTableOwnerMixin, View):
                 currency=currency,
                 exchange_rate=exchange_rate,
                 description=description,
-                table=table
+                table=table,
             )
             new_transaction.category.add(*categories)
 
         messages.success(request, _("Transaction added successfully."))
-        return redirect(reverse('table_detail', kwargs={'table_id': table.id}))
-
+        return redirect(reverse("table_detail", kwargs={"table_id": table.id}))
 
 
 class DeleteTransactionView(View):
     def post(self, request, transaction_id):
-        transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
+        transaction = get_object_or_404(
+            Transaction, id=transaction_id, table__user=request.user
+        )
         table_id = transaction.table.id
         transaction.delete()
-        return HttpResponseRedirect(reverse('table_detail', kwargs={'table_id': table_id}))
-
-
+        return HttpResponseRedirect(
+            reverse("table_detail", kwargs={"table_id": table_id})
+        )
 
 
 class EditTransactionView(View):
     def post(self, request):
-        transaction_id = request.POST.get('transaction_id')
-        transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
+        transaction_id = request.POST.get("transaction_id")
+        transaction = get_object_or_404(
+            Transaction, id=transaction_id, table__user=request.user
+        )
 
-        transaction.date = request.POST.get('date')
-        new_amount = request.POST.get('amount')
-        transaction.description = request.POST.get('description')
-        new_currency = request.POST.get('currency', transaction.currency)
+        transaction.date = request.POST.get("date")
+        new_amount = request.POST.get("amount")
+        transaction.description = request.POST.get("description")
+        new_currency = request.POST.get("currency", transaction.currency)
 
-        category_id = request.POST.get('category_id')
+        category_id = request.POST.get("category_id")
         category = get_object_or_404(Category, id=category_id)
 
         transaction.category.set([category])
@@ -234,16 +263,18 @@ class EditTransactionView(View):
 
         transaction.save()
 
-        return redirect(reverse('table_detail', kwargs={'table_id': transaction.table.id}))
+        return redirect(
+            reverse("table_detail", kwargs={"table_id": transaction.table.id})
+        )
 
 
 class AboutView(View):
     def get(self, request):
-        return render(request, 'about.html')
+        return render(request, "about.html")
 
 
 def custom_404_view(request, exception):
-    return render(request, '404.html', status=404)
+    return render(request, "404.html", status=404)
 
 
 class AvailableMonthsView(View):
@@ -254,15 +285,16 @@ class AvailableMonthsView(View):
             return JsonResponse({"months": []})
 
         months = (
-            Transaction.objects
-            .filter(date__year=int(year))
+            Transaction.objects.filter(date__year=int(year))
             .annotate(month=ExtractMonth("date"))
             .values("month")
             .distinct()
             .order_by("month")
         )
 
-        months_list = [{"month": m["month"], "month_name": MONTH_NAMES[m["month"]]} for m in months]
+        months_list = [
+            {"month": m["month"], "month_name": MONTH_NAMES[m["month"]]} for m in months
+        ]
 
         return JsonResponse({"months": months_list})
 
@@ -287,4 +319,3 @@ class SettingsView(LoginRequiredMixin, UpdateView):
             activate(request.user.language)
             request.session["django_language"] = request.user.language
         return super().get(request, *args, **kwargs)
-

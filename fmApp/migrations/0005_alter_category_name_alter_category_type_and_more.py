@@ -7,68 +7,99 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fmApp', '0004_alter_transaction_description'),
+        ("fmApp", "0004_alter_transaction_description"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='category',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Category name'),
+            model_name="category",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Category name"),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='type',
-            field=models.CharField(choices=[('income', 'Income'), ('expense', 'Expense')], max_length=10, verbose_name='Category type'),
+            model_name="category",
+            name="type",
+            field=models.CharField(
+                choices=[("income", "Income"), ("expense", "Expense")],
+                max_length=10,
+                verbose_name="Category type",
+            ),
         ),
         migrations.AlterField(
-            model_name='table',
-            name='description',
-            field=models.TextField(blank=True, null=True, verbose_name='Description'),
+            model_name="table",
+            name="description",
+            field=models.TextField(blank=True, null=True, verbose_name="Description"),
         ),
         migrations.AlterField(
-            model_name='table',
-            name='name',
-            field=models.CharField(max_length=100, verbose_name='Table name'),
+            model_name="table",
+            name="name",
+            field=models.CharField(max_length=100, verbose_name="Table name"),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='amount',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Amount'),
+            model_name="transaction",
+            name="amount",
+            field=models.DecimalField(
+                decimal_places=2, max_digits=10, verbose_name="Amount"
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='amount_in_uah',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True, verbose_name='Amount in UAH'),
+            model_name="transaction",
+            name="amount_in_uah",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=10,
+                null=True,
+                verbose_name="Amount in UAH",
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='category',
-            field=models.ManyToManyField(related_name='transactions', to='fmApp.category', verbose_name='Category'),
+            model_name="transaction",
+            name="category",
+            field=models.ManyToManyField(
+                related_name="transactions",
+                to="fmApp.category",
+                verbose_name="Category",
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='currency',
-            field=models.CharField(choices=[('UAH', 'Hryvnia'), ('USD', 'Dollar'), ('EUR', 'Euro')], default='UAH', max_length=3, verbose_name='Currency'),
+            model_name="transaction",
+            name="currency",
+            field=models.CharField(
+                choices=[("UAH", "Hryvnia"), ("USD", "Dollar"), ("EUR", "Euro")],
+                default="UAH",
+                max_length=3,
+                verbose_name="Currency",
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='date',
-            field=models.DateField(verbose_name='Date'),
+            model_name="transaction",
+            name="date",
+            field=models.DateField(verbose_name="Date"),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='description',
-            field=models.TextField(blank=True, null=True, verbose_name='Description'),
+            model_name="transaction",
+            name="description",
+            field=models.TextField(blank=True, null=True, verbose_name="Description"),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='exchange_rate',
-            field=models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True, verbose_name='Exchange rate'),
+            model_name="transaction",
+            name="exchange_rate",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=4,
+                max_digits=10,
+                null=True,
+                verbose_name="Exchange rate",
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='table',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='fmApp.table', verbose_name='Table'),
+            model_name="transaction",
+            name="table",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="fmApp.table",
+                verbose_name="Table",
+            ),
         ),
     ]

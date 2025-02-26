@@ -1,6 +1,7 @@
-from django.shortcuts import redirect
-from django.conf import settings
 import re
+
+from django.conf import settings
+from django.shortcuts import redirect
 from django.utils.translation import activate
 
 
@@ -9,11 +10,11 @@ class LoginRequiredMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.EXCLUDED_URLS = [
-            re.compile(r'^/social-auth/'),
-            re.compile(r'^/users/login/'),
-            re.compile(r'^/users/register/'),
-            re.compile(r'^/static/'),
-            re.compile(r'^/media/'),
+            re.compile(r"^/social-auth/"),
+            re.compile(r"^/users/login/"),
+            re.compile(r"^/users/register/"),
+            re.compile(r"^/static/"),
+            re.compile(r"^/media/"),
         ]
 
     def __call__(self, request):
@@ -36,7 +37,7 @@ class LanguageMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            language = getattr(request.user, 'language', 'en')
+            language = getattr(request.user, "language", "en")
             activate(language)
             request.session["django_language"] = language
 

@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def add_default_categories(apps, schema_editor):
     Category = apps.get_model("fmApp", "Category")
 
@@ -37,7 +38,7 @@ def add_default_categories(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fmApp', '0009_remove_category_name_uk'),
+        ("fmApp", "0009_remove_category_name_uk"),
     ]
 
     operations = [
