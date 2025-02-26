@@ -58,8 +58,21 @@
     document.addEventListener('DOMContentLoaded', function () {
         const transactionType = document.getElementById('transaction-type');
         const transactionCategory = document.getElementById('transaction-category');
+        const transactionDate = document.getElementById('transaction-date');
+        const transactionForm = document.querySelector('form');
 
-        // Function to filter categories based on the selected type
+        function validateDate(event) {
+            const selectedDate = new Date(transactionDate.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate > today) {
+                event.preventDefault();
+                alert("The exchange rate for this date is not available.");
+                transactionDate.value = "";
+            }
+        }
+
         function filterCategories() {
             const selectedType = transactionType.value;
             const options = transactionCategory.querySelectorAll('option');
@@ -76,6 +89,7 @@
         }
 
         transactionType.addEventListener('change', filterCategories);
+        transactionForm.addEventListener('submit', validateDate);
 
         filterCategories();
     });
