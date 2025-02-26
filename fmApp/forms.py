@@ -25,3 +25,13 @@ class LanguageForm(forms.ModelForm):
         model = CustomUser
         fields = ["language"]
         widgets = {"language": forms.Select(attrs={"class": "form-select"})}
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name", "type"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter category name"}),
+            "type": forms.Select(attrs={"class": "form-select"}),
+        }

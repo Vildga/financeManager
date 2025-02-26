@@ -96,6 +96,10 @@ urlpatterns = [
         api_public.IncomeExpenseTrendAPIView.as_view(),
         name="api_income_expense_trend",
     ),
+    path("delete-category/<int:pk>/", views.CategoryDeleteView.as_view(), name="delete_category"),
+    path('add-category/', views.CategoryAddView.as_view(), name='add_category'),
+    path("load-default-categories/", views.load_default_categories, name="load_default_categories"),
+
     re_path(
         r"^swagger/$",
         schema_view.with_ui("swagger", cache_timeout=0),

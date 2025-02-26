@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from users.models import CustomUser
+
 from fmApp.managers import TransactionManager
 
 
@@ -21,9 +23,10 @@ class Category(models.Model):
     type = models.CharField(
         max_length=10, choices=TypeChoices.choices, verbose_name=_("Category Type")
     )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories")
 
     class Meta:
-        unique_together = ("name", "type")
+        unique_together = ("name", "type", "user")
         ordering = ["name"]
 
     def translated_name(self):
