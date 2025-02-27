@@ -17,15 +17,17 @@ from django.utils.timezone import now
 from django.utils.translation import activate
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import CreateView, DetailView, TemplateView
-from django.views.generic.edit import UpdateView
+from django.views.generic import CreateView, DetailView, TemplateView, DeleteView, UpdateView
 
 from fmApp.utils import get_exchange_rate
 from users.models import CustomUser
 
-from .forms import LanguageForm, TableForm
+from .forms import LanguageForm, TableForm, CategoryForm
 from .models import Category, Table, Transaction
 from .permissions import IsTableOwnerMixin
+
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 MONTH_NAMES = {
     1: "January",
@@ -41,6 +43,18 @@ MONTH_NAMES = {
     11: "November",
     12: "December",
 }
+
+
+DEFAULT_CATEGORIES = [
+    ("Groceries", "expense"), ("Cafe", "expense"), ("Gifts", "expense"),
+    ("Mobile Connection", "expense"), ("Transport", "expense"), ("Transfer", "expense"),
+    ("Gym", "expense"), ("Entertainment", "expense"), ("Subscriptions", "expense"),
+    ("Repairs", "expense"), ("Pharmacy", "expense"), ("Cosmetics", "expense"),
+    ("Other", "expense"), ("Utility Bills", "expense"), ("Hospital", "expense"),
+    ("Shopping", "expense"), ("Beauty", "expense"), ("Planned Purchases", "expense"),
+    ("Parking", "expense"), ("Transfer", "income"), ("Deposit", "income"),
+    ("Salary", "income"),
+]
 
 
 class HomeView(TemplateView):
@@ -112,6 +126,8 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             table=table, date__year=selected_year, date__month=selected_month
         ).prefetch_related("category")
 
+        user_categories = Category.objects.filter(user=self.request.user)
+
         summaries = (
             transactions.values("category__name", "category__type")
             .annotate(total=Sum("amount_in_uah"))
@@ -155,7 +171,7 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         context.update(
             {
                 "transactions": transactions,
-                "categories": Category.objects.all(),
+                "categories": user_categories,
                 "expense_summary": expense_summary,
                 "income_summary": income_summary,
                 "total_income": totals["income"],
@@ -318,4 +334,74 @@ class SettingsView(LoginRequiredMixin, UpdateView):
         if request.user.is_authenticated:
             activate(request.user.language)
             request.session["django_language"] = request.user.language
-        return super().get(request, *args, **kwargs)
+
+        category_form = CategoryForm()
+        categories = Category.objects.filter(user=request.user)
+        return render(request, self.template_name, {
+            "form": self.get_form(),
+            "category_form": category_form,
+            "categories": categories
+        })
+
+    def post(self, request, *args, **kwargs):
+        if "add_category" in request.POST:
+            category_form = CategoryForm(request.POST)
+            if category_form.is_valid():
+                category = category_form.save(commit=False)
+                category.user = request.user
+
+                existing_category = Category.objects.filter(
+                    name=category.name, type=category.type, user=request.user
+                ).exists()
+
+                if existing_category:
+                    messages.warning(request, "Ця категорія вже існує!")
+                else:
+                    category.save()
+                    messages.success(request, "Категорію успішно додано!")
+
+            return redirect("settings")
+
+        return super().post(request, *args, **kwargs)
+
+
+class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Category
+    success_url = reverse_lazy("settings")
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Category, id=self.kwargs["pk"], user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
+class CategoryAddView(CreateView):
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy('settings')
+
+    def form_valid(self, form):
+        category = form.save()
+        return JsonResponse({
+            'success': True,
+            'category_id': category.id,
+            'category_name': category.name,
+            'category_type': category.get_type_display(),
+            'message': _("Category added successfully!")
+        })
+
+    def form_invalid(self, form):
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+
+def load_default_categories(request):
+    if request.method == "POST":
+        created_count = 0
+
+        for name, cat_type in DEFAULT_CATEGORIES:
+            category, created = Category.objects.get_or_create(name=name, type=cat_type, user=request.user)
+            if created:
+                created_count += 1
+
+    return redirect("settings")
