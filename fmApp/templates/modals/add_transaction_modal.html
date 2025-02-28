@@ -17,8 +17,8 @@
                     <div class="mb-3">
                         <label for="transaction-type" class="form-label">{% trans "Type" %}</label>
                         <select class="form-select" id="transaction-type" name="type" required>
-                            <option value="income">{% trans "Income" %}</option>
                             <option value="expense">{% trans "Expense" %}</option>
+                            <option value="income">{% trans "Income" %}</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -65,12 +65,6 @@
             const selectedDate = new Date(transactionDate.value);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
-            if (selectedDate > today) {
-                event.preventDefault();
-                alert("The exchange rate for this date is not available.");
-                transactionDate.value = "";
-            }
         }
 
         function filterCategories() {
@@ -94,3 +88,13 @@
         filterCategories();
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dateInput = document.getElementById("transaction-date");
+        if (dateInput) {
+            const today = new Date().toISOString().split("T")[0];
+            dateInput.value = today;
+        }
+    });
+</script>
+

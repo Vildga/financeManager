@@ -40,7 +40,13 @@
                                         {% csrf_token %}
                                         <div class="mb-3">
                                             <label for="id_language" class="form-label">{% trans "Select language" %}:</label>
-                                            {{ form.language }}
+                                            <select name="language" id="id_language" class="form-select">
+                                                {% for lang_code, lang_name in form.fields.language.choices %}
+                                                    <option value="{{ lang_code }}" {% if lang_code == current_language %}selected{% endif %}>
+                                                        {{ lang_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
                                         </div>
                                         <button type="submit" name="save" class="btn btn-success">{% trans "Save" %}</button>
                                     </form>

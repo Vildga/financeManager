@@ -201,12 +201,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return colors.slice(0, count);
     }
 
-    // 🚀 Виводимо вихідні дані перед створенням графіка
-    const expenseLabels = [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}];
-    const expenseValues = [{% for expense in expense_summary %}{{ expense.total }},{% endfor %}];
+    const expenseLabels = [
+        {% for expense in expense_summary %}
+        '{{ expense.category__name|escapejs }}',
+        {% endfor %}
+    ];
+    const expenseValues = [
+        {% for expense in expense_summary %}
+        {{ expense.total }},
+        {% endfor %}
+    ];
 
-    const incomeLabels = [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}];
-    const incomeValues = [{% for income in income_summary %}{{ income.total }},{% endfor %}];
+    const incomeLabels = [
+        {% for income in income_summary %}
+        '{{ income.category__name|escapejs }}',
+        {% endfor %}
+    ];
+    const incomeValues = [
+        {% for income in income_summary %}
+        {{ income.total }},
+        {% endfor %}
+    ];
 
     console.log("Expense Labels:", expenseLabels);
     console.log("Expense Values:", expenseValues);

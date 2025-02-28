@@ -1,7 +1,7 @@
 from django import forms
 
 from users.models import CustomUser
-
+from django.utils.translation import gettext_lazy as _
 from .models import Category, Table
 
 
@@ -32,6 +32,6 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ["name", "type"]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter category name"}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": _("Enter category name")}),
             "type": forms.Select(attrs={"class": "form-select"}),
         }

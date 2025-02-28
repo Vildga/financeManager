@@ -25,9 +25,8 @@ from users.models import CustomUser
 from .forms import LanguageForm, TableForm, CategoryForm
 from .models import Category, Table, Transaction
 from .permissions import IsTableOwnerMixin
+from django.db.models import Max
 
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 
 MONTH_NAMES = {
     1: "January",
@@ -104,6 +103,44 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
     context_object_name = "table"
     pk_url_kwarg = "table_id"
 
+    def dispatch(self, request, *args, **kwargs):
+        table = self.get_object()  # Получаем текущую таблицу
+        query_params = request.GET.copy()
+
+        # 1. Получаем текущий месяц и год
+        current_month = now().month
+        current_year = now().year
+
+        # 2. Если month или year нет в GET-параметрах — добавляем их
+        if "month" not in request.GET or "year" not in request.GET:
+            query_params["month"] = str(current_month)
+            query_params["year"] = str(current_year)
+            return redirect(f"{request.path}?{query_params.urlencode()}")
+
+        selected_month = int(request.GET.get("month", current_month))
+        selected_year = int(request.GET.get("year", current_year))
+
+        # 3. Проверяем, есть ли транзакции за указанный месяц
+        has_transactions = Transaction.objects.filter(
+            table=table, date__year=selected_year, date__month=selected_month
+        ).exists()
+
+        # 4. Если за этот месяц транзакций нет – берём последнюю доступную дату
+        if not has_transactions:
+            last_transaction = (
+                Transaction.objects.filter(table=table)
+                .aggregate(last_date=Max("date"))
+            )
+
+            if last_transaction["last_date"]:
+                last_date = last_transaction["last_date"]
+                query_params["month"] = str(last_date.month)
+                query_params["year"] = str(last_date.year)
+                return redirect(f"{request.path}?{query_params.urlencode()}")
+
+        return super().dispatch(request, *args, **kwargs)
+
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         table = self.get_object()
@@ -122,9 +159,14 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             else now().year
         )
 
+        print(f"Selected Month: {selected_month}, Selected Year: {selected_year}, Table: *{table}*")
+        print(f"Table ID: {table.id}")
         transactions = Transaction.objects.filter(
             table=table, date__year=selected_year, date__month=selected_month
         ).prefetch_related("category")
+
+        print(f"Transactions count: {transactions.count()}")
+        print(f"Transactions: {list(transactions.values())}")
 
         user_categories = Category.objects.filter(user=self.request.user)
 
@@ -340,7 +382,8 @@ class SettingsView(LoginRequiredMixin, UpdateView):
         return render(request, self.template_name, {
             "form": self.get_form(),
             "category_form": category_form,
-            "categories": categories
+            "categories": categories,
+            "current_language": self.request.user.language,
         })
 
     def post(self, request, *args, **kwargs):
