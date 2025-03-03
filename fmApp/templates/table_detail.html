@@ -42,7 +42,7 @@
                 <select name="month" id="monthFilter" class="form-select w-auto">
                     {% for month in available_months %}
                         <option value="{{ month.month }}" {% if month.month == selected_month %}selected{% endif %}>
-                            {{ month.month_name }}
+                            {% trans month.month_name %}
                         </option>
                     {% endfor %}
                 </select>
