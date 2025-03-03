@@ -111,7 +111,6 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         current_month = now().month
         current_year = now().year
 
-        # 2. Если month или year нет в GET-параметрах — добавляем их
         if "month" not in request.GET or "year" not in request.GET:
             query_params["month"] = str(current_month)
             query_params["year"] = str(current_year)
@@ -120,12 +119,10 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
         selected_month = int(request.GET.get("month", current_month))
         selected_year = int(request.GET.get("year", current_year))
 
-        # 3. Проверяем, есть ли транзакции за указанный месяц
         has_transactions = Transaction.objects.filter(
             table=table, date__year=selected_year, date__month=selected_month
         ).exists()
 
-        # 4. Если за этот месяц транзакций нет – берём последнюю доступную дату
         if not has_transactions:
             last_transaction = (
                 Transaction.objects.filter(table=table)
@@ -159,14 +156,9 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             else now().year
         )
 
-        print(f"Selected Month: {selected_month}, Selected Year: {selected_year}, Table: *{table}*")
-        print(f"Table ID: {table.id}")
         transactions = Transaction.objects.filter(
             table=table, date__year=selected_year, date__month=selected_month
         ).prefetch_related("category")
-
-        print(f"Transactions count: {transactions.count()}")
-        print(f"Transactions: {list(transactions.values())}")
 
         user_categories = Category.objects.filter(user=self.request.user)
 
