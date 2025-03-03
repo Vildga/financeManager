@@ -174,13 +174,103 @@
 }
 
 .btn-custom-yellow {
-    background-color: #ffc107 !important; /* Основной желтый цвет */
-    border-color: #ffc107 !important; /* Цвет границы */
-    color: #fff !important; /* Цвет текста */
-    transition: background-color 0.2s, border-color 0.2s; /* Анимация при наведении */
+    background-color: rgba(255, 193, 7, 0.2) !important; /* Прозорий жовтий */
+    border-color: rgba(255, 193, 7, 0.5) !important; /* Прозора межа */
+    color: #856404 !important; /* Темний жовтий текст */
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
+/* Посилення кольору при наведенні */
 .btn-custom-yellow:hover {
-    background-color: #e0a800 !important; /* Более темный оттенок при наведении */
-    border-color: #d39e00 !important;
+    background-color: rgba(255, 193, 7, 0.4) !important; /* Менша прозорість */
+    border-color: rgba(255, 193, 7, 0.8) !important;
 }
+
+/* Напівпрозорий червоний для кнопки видалення */
+.btn-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important; /* Прозорий червоний */
+    border-color: rgba(220, 53, 69, 0.5) !important; /* Прозора межа */
+    color: #721c24 !important; /* Темний червоний текст */
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-danger:hover {
+    background-color: rgba(220, 53, 69, 0.4) !important; /* Менша прозорість */
+    border-color: rgba(220, 53, 69, 0.8) !important;
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+    .transaction-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px; /* Відступи між рядками */
+    }
+
+    /* Стилізація рядків */
+    .transaction-row {
+        background: #ffffff;
+        transition: all 0.3s ease-in-out;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .transaction-row td {
+        padding: 12px 16px;
+        vertical-align: middle;
+        border-top: 1px solid #e9ecef;
+    }
+
+    /* Додаємо вертикальну смугу */
+    .transaction-row::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 6px;
+        height: 100%;
+        border-radius: 8px 0 0 8px;
+    }
+
+    /* Колір для доходів (income) */
+    .income::before {
+        background-color: #28a745; /* Світло-зелений */
+    }
+
+    /* Колір для витрат (expense) */
+    .expense::before {
+        background-color: #dc3545; /* Червоний */
+    }
+
+    /* Підсвічування при наведенні */
+    .transaction-row:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Покращений вигляд заголовків таблиці */
+    .transaction-table thead tr {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .transaction-table th {
+        padding: 14px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /* Поле пошуку */
+    .search-container {
+        margin-bottom: 15px;
+    }

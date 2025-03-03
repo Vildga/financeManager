@@ -45,19 +45,19 @@ services:
     networks:
       - app_network
 
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/dev.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    networks:
-      - app_network
-    depends_on:
-      - web
+#  nginx:
+#    image: nginx:latest
+#    container_name: nginx
+#    ports:
+#      - "443:443"
+#      - "80:80"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/dev.conf
+#      - /etc/letsencrypt:/etc/letsencrypt:ro
+#    networks:
+#      - app_network
+#    depends_on:
+#      - web
 
 networks:
   app_network:

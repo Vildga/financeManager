@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registration Form</title>
+  <link rel="stylesheet" href="/static/log-reg-style.css" />
+</head>
+<body>
+  <div class="login_form">
+    <!-- Registration form container -->
+    <form action="{% url 'register' %}" method="post">
+      {% csrf_token %}
+      <h3>Sign up</h3>
+
+      <div class="login_option">
+        <div class="option">
+          <a href="{% url 'social:begin' 'google-oauth2' %}" class="social-button google-button">
+            <img src="/media/logos/google.png" alt="Google" />
+            <span>Google</span>
+          </a>
+        </div>
+      </div>
+
+      <p class="separator"><span>or</span></p>
+
+      <!-- Django Form Fields -->
+      <div class="input_box">
+        {{ form.email.label_tag }}
+        {{ form.email }}
+      </div>
+
+      <div class="input_box">
+        {{ form.first_name.label_tag }}
+        {{ form.first_name }}
+      </div>
+
+      <div class="input_box">
+        {{ form.last_name.label_tag }}
+        {{ form.last_name }}
+      </div>
+
+      <div class="input_box">
+        {{ form.password1.label_tag }}
+        {{ form.password1 }}
+      </div>
+
+      <div class="input_box">
+        {{ form.password2.label_tag }}
+        {{ form.password2 }}
+      </div>
+
+      <!-- Errors Display -->
+      {% if form.errors %}
+        <div class="error_messages">
+          <ul>
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <!-- Sign up button -->
+      <button type="submit">Sign Up</button>
+
+      <p class="sign_up">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </form>
+  </div>
+</body>
+</html>

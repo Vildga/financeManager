@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class FmappConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'fmApp'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "fmApp"

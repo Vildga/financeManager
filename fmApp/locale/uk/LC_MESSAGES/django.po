@@ -1,0 +1,578 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-28 17:07+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
+"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
+"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
+"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#: fmApp/models.py:19 fmApp/templates/modals/add_transaction_modal.html:21
+#: fmApp/templates/modals/edit_transaction_modal.html:24
+msgid "Income"
+msgstr "Дохід"
+
+#: fmApp/models.py:20 fmApp/templates/modals/add_transaction_modal.html:20
+#: fmApp/templates/modals/edit_transaction_modal.html:25
+msgid "Expense"
+msgstr "Витрата"
+
+
+#: fmApp/templates/settings.html:105
+# fuzzy
+#| msgid "Category"
+msgid "Category Name"
+msgstr "Категорія"
+
+#: fmApp/models.py:24 fmApp/templates/settings.html:87
+#, fuzzy
+#| msgid "Category"
+msgid "Category Type"
+msgstr "Категорія"
+
+#: fmApp/templates/about.html:8 fmApp/templates/about.html:17
+msgid "About Finance Manager"
+msgstr "Про Finance Manager"
+
+#: fmApp/templates/about.html:19
+# fuzzy
+#| msgid ""
+#| "Welcome to Finance Manager — a simple and convenient tool for managing "
+#| "your personal finances. Track your expenses, categorize your "
+#| "transactions, and make smarter financial decisions!"
+msgid ""
+"\n"
+"                Welcome to Finance Manager — a simple and convenient tool "
+"for managing your personal finances.\n"
+"                Track your expenses, categorize your transactions, and make "
+"smarter financial decisions!\n"
+"            "
+msgstr ""
+"Ласкаво просимо до Finance Manager — простого та зручного інструменту для "
+"управління вашими особистими фінансами. Відстежуйте свої витрати, "
+"класифікуйте транзакції та приймайте розумні фінансові рішення!"
+
+#: fmApp/templates/about.html:25
+msgid "Need Help?"
+msgstr "Потрібна допомога?"
+
+#: fmApp/templates/about.html:27
+msgid ""
+"If you have any questions or need assistance, feel free to contact our "
+"support team."
+msgstr ""
+"Якщо у вас виникли питання або вам потрібна допомога, не соромтеся "
+"звертатися до нашої службу підтримки."
+
+#: fmApp/templates/about.html:28
+msgid "Click the link below to get in touch with us on Telegram:"
+msgstr "Натисніть на посилання нижче, щоб зв'язатися з нами в Telegram:"
+
+#: fmApp/templates/about.html:31
+msgid "Contact Support"
+msgstr "Звернутися до служби підтримки"
+
+#: fmApp/templates/about.html:34
+msgid "Join Our Community"
+msgstr "Приєднуйтесь до нашої спільноти"
+
+#: fmApp/templates/about.html:36
+msgid ""
+"Stay updated with the latest news, tips, and feature releases by joining our "
+"Telegram group:"
+msgstr ""
+"Будьте в курсі останніх новин, порад та випусків, приєднавшись до нашої "
+"Телеграм групи:"
+
+#: fmApp/templates/about.html:39
+msgid "Join Finance Manager Digest"
+msgstr "Приєднуйтесь до Дайджесту Finance Manager"
+
+#: fmApp/templates/base.html:8 fmApp/templates/base.html:18
+msgid "Finance Manager"
+msgstr "Finance Manager"
+
+#: fmApp/templates/base.html:17
+msgid "LogoFinanceManager"
+msgstr "LogoFinanceManager"
+
+#: fmApp/templates/base.html:22
+msgid "About"
+msgstr "Про нас"
+
+#: fmApp/templates/base.html:24
+msgid "Logout"
+msgstr "Вихід"
+
+#: fmApp/templates/base.html:25 fmApp/templates/settings.html:14
+msgid "Settings"
+msgstr "Налаштування"
+
+#: fmApp/templates/base.html:27
+msgid "Login"
+msgstr "Вхід"
+
+#: fmApp/templates/base.html:28
+msgid "Register"
+msgstr "Зареєструватися"
+
+#: fmApp/templates/home.html:20
+msgid "Your Tables"
+msgstr "Ваші таблиці"
+
+#: fmApp/templates/home.html:22
+#: fmApp/templates/modals/create_table_modal.html:22
+msgid "Create Table"
+msgstr "Створити таблицю"
+
+#: fmApp/templates/home.html:38
+#: fmApp/templates/modals/delete_table_modal.html:19
+#: fmApp/templates/modals/delete_transaction_modal.html:17
+#: fmApp/templates/settings.html:159
+msgid "Delete"
+msgstr "Видалити"
+
+#: fmApp/templates/home.html:42
+msgid "You have no tables yet."
+msgstr "У вас ще немає таблиць"
+
+#: fmApp/templates/home.html:49
+msgid "Welcome, "
+msgstr "Вітаємо, "
+
+#: fmApp/templates/home.html:51
+msgid ""
+"Select a table to manage your data or create a new one using the button on "
+"the left."
+msgstr ""
+"Виберіть таблицю для управління вашими даними або створіть нову за допомогою "
+"кнопки зліва"
+
+#: fmApp/templates/login.html:6
+msgid "Login Form"
+msgstr "Форма входу"
+
+#: fmApp/templates/login.html:13
+msgid "Log in with"
+msgstr "Увійдіть за допомогою"
+
+#: fmApp/templates/login.html:19
+msgid "Google"
+msgstr "Google"
+
+#: fmApp/templates/login.html:26
+msgid "GitHub"
+msgstr "GitHub"
+
+#: fmApp/templates/login.html:31
+msgid "or"
+msgstr "або"
+
+#: fmApp/templates/login.html:34 fmApp/templates/registration.html:18
+msgid "Username"
+msgstr "Ім'я користувача"
+
+#: fmApp/templates/login.html:35 fmApp/templates/registration.html:19
+msgid "Enter your username"
+msgstr "Enter your username"
+
+#: fmApp/templates/login.html:40 fmApp/templates/registration.html:30
+msgid "Password"
+msgstr "Password"
+
+#: fmApp/templates/login.html:41
+msgid "Forgot Password?"
+msgstr "Forgot Password?"
+
+#: fmApp/templates/login.html:43 fmApp/templates/registration.html:31
+msgid "Enter your password"
+msgstr "Enter your password"
+
+#: fmApp/templates/login.html:46
+msgid "Log In"
+msgstr ""
+
+#: fmApp/templates/login.html:48
+msgid "Don't have an account?"
+msgstr ""
+
+#: fmApp/templates/login.html:48 fmApp/templates/registration.html:14
+msgid "Sign up"
+msgstr ""
+
+#: fmApp/templates/modals/add_transaction_modal.html:7
+#: fmApp/templates/modals/add_transaction_modal.html:49
+#: fmApp/templates/table_detail.html:25
+msgid "Add Transaction"
+msgstr "Додати транзакцію"
+
+#: fmApp/templates/modals/add_transaction_modal.html:8
+#: fmApp/templates/modals/create_table_modal.html:9
+#: fmApp/templates/modals/delete_table_modal.html:9
+#: fmApp/templates/modals/delete_transaction_modal.html:8
+#: fmApp/templates/modals/edit_transaction_modal.html:9
+msgid "Close"
+msgstr "Закрити"
+
+#: fmApp/templates/modals/add_transaction_modal.html:14
+#: fmApp/templates/modals/edit_transaction_modal.html:17
+#: fmApp/templates/table_detail.html:295
+msgid "Date"
+msgstr "Дата"
+
+#: fmApp/templates/modals/add_transaction_modal.html:18
+#: fmApp/templates/modals/edit_transaction_modal.html:22
+#: fmApp/templates/settings.html:106
+msgid "Type"
+msgstr "Тип"
+
+#: fmApp/templates/modals/add_transaction_modal.html:25
+#: fmApp/templates/modals/edit_transaction_modal.html:30
+#: fmApp/templates/table_detail.html:111 fmApp/templates/table_detail.html:142
+msgid "Category"
+msgstr "Категорія"
+
+#: fmApp/templates/modals/add_transaction_modal.html:34
+#: fmApp/templates/modals/edit_transaction_modal.html:39
+#: fmApp/templates/table_detail.html:297
+msgid "Amount"
+msgstr "Сума"
+
+#: fmApp/templates/modals/add_transaction_modal.html:45
+#: fmApp/templates/modals/edit_transaction_modal.html:54
+#: fmApp/templates/table_detail.html:298
+msgid "Description"
+msgstr "Опис"
+
+#: fmApp/templates/modals/create_table_modal.html:8
+msgid "Create New Table"
+msgstr "Створити таблицю"
+
+#: fmApp/templates/modals/create_table_modal.html:15
+msgid "Table Name"
+msgstr "Назва таблиці"
+
+#: fmApp/templates/modals/create_table_modal.html:19
+msgid "Table Description"
+msgstr "Опис таблиці"
+
+#: fmApp/templates/modals/delete_table_modal.html:8
+#: fmApp/templates/modals/delete_transaction_modal.html:7
+#: fmApp/templates/settings.html:150
+msgid "Confirm Deletion"
+msgstr "Підтвердити видалення"
+
+#: fmApp/templates/modals/delete_table_modal.html:12
+msgid "Are you sure you want to delete this table?"
+msgstr "Ви впевнені, що хочете видалити цю таблицю?"
+
+#: fmApp/templates/modals/delete_table_modal.html:18
+#: fmApp/templates/modals/delete_transaction_modal.html:16
+#: fmApp/templates/settings.html:161
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: fmApp/templates/modals/delete_transaction_modal.html:11
+msgid "Are you sure you want to delete this transaction?"
+msgstr "Ви впевнені, що хочете видалити цю транзакцію?"
+
+#: fmApp/templates/modals/edit_transaction_modal.html:8
+msgid "Edit Transaction"
+msgstr "Додати транзакцію"
+
+#: fmApp/templates/modals/edit_transaction_modal.html:60
+msgid "Save Changes"
+msgstr "Зберегти зміни"
+
+#: fmApp/templates/registration.html:6
+msgid "Registration Form"
+msgstr "Реєстраційна форма"
+
+#: fmApp/templates/registration.html:24
+msgid "Email"
+msgstr "Пошта"
+
+#: fmApp/templates/registration.html:25
+msgid "Enter your email address"
+msgstr "Введіть свою електронну адресу"
+
+#: fmApp/templates/registration.html:36
+msgid "Confirm Password"
+msgstr ""
+
+#: fmApp/templates/registration.html:37
+msgid "Confirm your password"
+msgstr ""
+
+#: fmApp/templates/registration.html:41
+msgid "Sign Up"
+msgstr ""
+
+#: fmApp/templates/registration.html:43
+msgid "Already have an account?"
+msgstr ""
+
+#: fmApp/templates/registration.html:43
+msgid "Log in"
+msgstr ""
+
+#: fmApp/templates/settings.html:29
+msgid "Customization"
+msgstr "Кастомізація"
+
+#: fmApp/templates/settings.html:38
+# fuzzy
+#| msgid "Settings"
+msgid "Language Settings"
+msgstr "Мовні налаштування"
+
+#: fmApp/templates/settings.html:42
+msgid "Select language"
+msgstr "Вибрати мову"
+
+#: fmApp/templates/settings.html:51
+msgid "Save"
+msgstr "Зберегти"
+
+#: fmApp/templates/settings.html:59
+# fuzzy
+#| msgid "Settings"
+msgid "Theme Settings"
+msgstr "Налаштування теми"
+
+#: fmApp/templates/settings.html:60
+msgid "Coming soon..."
+msgstr "Незабаром..."
+
+#: fmApp/templates/settings.html:72 fmApp/templates/table_detail.html:296
+msgid "Categories"
+msgstr "Категорії"
+
+#: fmApp/templates/settings.html:79
+# fuzzy
+#| msgid "Categories"
+msgid "Manage Categories"
+msgstr "Управління категоріями"
+
+#: fmApp/templates/settings.html:90
+# fuzzy
+#| msgid "Category"
+msgid "Add Category"
+msgstr "Додати категорію"
+
+#: fmApp/templates/settings.html:96
+# fuzzy
+#| msgid "Categories"
+msgid "Search categories"
+msgstr "Пошук категорії"
+
+#: fmApp/templates/settings.html:101
+# fuzzy
+#| msgid "Categories"
+msgid "Your Categories"
+msgstr "Ваші категорії"
+
+#: fmApp/templates/settings.html:107 fmApp/templates/table_detail.html:299
+msgid "Actions"
+msgstr "Дії"
+
+#: fmApp/templates/settings.html:124
+msgid "No categories added yet."
+msgstr "Категорії ще не додано."
+
+#: fmApp/templates/settings.html:134
+# fuzzy
+#| msgid "Categories"
+msgid "Load Default Categories"
+msgstr "Завантажити категорії за замовчуванням"
+
+#: fmApp/templates/settings.html:154
+# fuzzy
+#| msgid "Are you sure you want to delete this table?"
+msgid "Are you sure you want to delete this category?"
+msgstr "Ви впевнені, що хочете видалити цю таблицю?"
+
+#: fmApp/templates/settings.html
+msgid "Enter category name"
+msgstr "Введіть назву категорії"
+
+#: fmApp/templates/table_detail.html:32
+msgid "Year"
+msgstr "Рік"
+
+#: fmApp/templates/table_detail.html:41
+msgid "Month"
+msgstr "Місяць"
+
+#: fmApp/templates/table_detail.html:105
+msgid "Expense Summary"
+msgstr "Підсумки витрат"
+
+#: fmApp/templates/table_detail.html:112
+msgid "Total Expense"
+msgstr "Загальні витрати"
+
+#: fmApp/templates/table_detail.html:123
+msgid "Total Expenses"
+msgstr "Загальні витрати"
+
+#: fmApp/templates/table_detail.html:136
+msgid "Income Summary"
+msgstr "Підсумки доходів"
+
+#: fmApp/templates/table_detail.html:143 fmApp/templates/table_detail.html:154
+msgid "Total Income"
+msgstr "Загальний дохід"
+
+#: fmApp/templates/table_detail.html:169
+msgid "Expense Breakdown"
+msgstr "Розподіл витрат"
+
+#: fmApp/templates/table_detail.html:181
+msgid "Income Breakdown"
+msgstr "Розподіл доходів"
+
+#: fmApp/templates/table_detail.html:283
+msgid "Transactions"
+msgstr "Транзакції"
+
+#: fmApp/templates/table_detail.html:289
+# fuzzy
+#| msgid "Table Description"
+msgid "Search by description"
+msgstr "Опис таблиці"
+
+#: fmApp/views.py:246
+msgid "You must select at least one category."
+msgstr "Ви повинні обрати принаймні одну категорію."
+
+#: fmApp/views.py:252
+msgid "Selected categories do not exist."
+msgstr "Вибрані категорії не існують."
+
+#: fmApp/views.py:260
+msgid "Failed to retrieve exchange rate. Please try again."
+msgstr "Не вдалося отримати курс обміну. Будь ласка, спробуйте ще раз."
+
+#: fmApp/views.py:278
+msgid "Transaction added successfully."
+msgstr "Транзакцію успішно додано."
+
+#: fmApp/views.py:434
+# fuzzy
+#| msgid "Transaction added successfully."
+msgid "Category added successfully!"
+msgstr "Транзакцію успішно додано."
+
+msgid "Groceries"
+msgstr "Продукти"
+
+msgid "Cafe"
+msgstr "Кафе"
+
+msgid "Gifts"
+msgstr "Подарунки"
+
+msgid "Mobile Connection"
+msgstr "Мобільний зв'язок"
+
+msgid "Transport"
+msgstr "Транспорт"
+
+msgid "Transfer"
+msgstr "Переказ"
+
+msgid "Gym"
+msgstr "Спортзал"
+
+msgid "Entertainment"
+msgstr "Розваги"
+
+msgid "Subscriptions"
+msgstr "Підписки"
+
+msgid "Repairs"
+msgstr "Ремонт"
+
+msgid "Pharmacy"
+msgstr "Аптека"
+
+msgid "Cosmetics"
+msgstr "Косметика"
+
+msgid "Other"
+msgstr "Інше"
+
+msgid "Utility Bills"
+msgstr "Комунальні платежі"
+
+msgid "Hospital"
+msgstr "Лікарня"
+
+msgid "Shopping"
+msgstr "Покупки"
+
+msgid "Beauty"
+msgstr "Краса"
+
+msgid "Planned Purchases"
+msgstr "Заплановані покупки"
+
+msgid "Parking"
+msgstr "Парковка"
+
+msgid "Deposit"
+msgstr "Депозит"
+
+msgid "Salary"
+msgstr "Зарплата"
+
+msgid "January"
+msgstr "Січень"
+
+msgid "February"
+msgstr "Лютий"
+
+msgid "March"
+msgstr "Березень"
+
+msgid "April"
+msgstr "Квітень"
+
+msgid "May"
+msgstr "Травень"
+
+msgid "June"
+msgstr "Червень"
+
+msgid "July"
+msgstr "Липень"
+
+msgid "August"
+msgstr "Серпень"
+
+msgid "September"
+msgstr "Вересень"
+
+msgid "October"
+msgstr "Жовтень"
+
+msgid "November"
+msgstr "Листопад"
+
+msgid "December"
+msgstr "Грудень"

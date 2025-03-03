@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<!-- Modal for Creating Table -->
+<div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tableModalLabel">{% trans "Create New Table" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_table' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="table-name" class="form-label">{% trans "Table Name" %}</label>
+                        <input type="text" class="form-control" id="table-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="table-description" class="form-label">{% trans "Table Description" %}</label>
+                        <textarea class="form-control" id="table-description" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-add-transaction w-100">{% trans "Create Table" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

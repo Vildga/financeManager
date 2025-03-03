@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'table-detail-style.css' %}">
+    <link rel="stylesheet" href="{% static '/table-detail-style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
@@ -16,18 +18,81 @@
         </div>
     {% endif %}
 
-    
-    
     <div class="container">
         <!-- Button to add transaction -->
         <div class="button-container mb-4">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
-                Add Transaction
-            </button>
-            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#manageCategoriesModal">
-                Manage Categories
+                {% trans "Add Transaction" %}
             </button>
         </div>
+
+        <!-- Фільтр за місяцями та роками -->
+        <div class="container text-center">
+            <div class="filter-container mb-4 d-flex gap-3 align-items-center justify-content-center">
+                <label for="yearFilter" class="form-label">{% trans "Year" %}:</label>
+                <select name="year" id="yearFilter" class="form-select w-auto">
+                    {% for year in available_years %}
+                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label for="monthFilter" class="form-label">{% trans "Month" %}:</label>
+                <select name="month" id="monthFilter" class="form-select w-auto">
+                    {% for month in available_months %}
+                        <option value="{{ month.month }}" {% if month.month == selected_month %}selected{% endif %}>
+                            {% trans month.month_name %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const yearFilter = document.getElementById('yearFilter');
+                const monthFilter = document.getElementById('monthFilter');
+
+                yearFilter.addEventListener('change', function () {
+                    updateMonths(yearFilter.value);
+                });
+
+                monthFilter.addEventListener('change', function () {
+                    updateUrl();
+                });
+
+                function updateMonths(selectedYear) {
+                    fetch(`/get-available-months/?year=${selectedYear}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.months.length > 0) {
+                                monthFilter.innerHTML = '';
+                                data.months.forEach(month => {
+                                    let option = document.createElement("option");
+                                    option.value = month.month;
+                                    option.textContent = month.month_name;
+                                    monthFilter.appendChild(option);
+                                });
+
+                                monthFilter.value = data.months[0].month;
+                                updateUrl();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching months:', error));
+                }
+
+                function updateUrl() {
+                    const month = monthFilter.value;
+                    const year = yearFilter.value;
+                    const params = new URLSearchParams(window.location.search);
+                    params.set('month', month);
+                    params.set('year', year);
+                    window.location.search = params.toString();
+                }
+            });
+        </script>
 
 
 
@@ -37,14 +102,14 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Expense Summary</h5>
+                        <h5>{% trans "Expense Summary" %}</h5>
                     </div>
                     <div class="card-body">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Category</th>
-                                    <th>Total Expense</th>
+                                    <th>{% trans "Category" %}</th>
+                                    <th>{% trans "Total Expense" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,7 +120,7 @@
                                     </tr>
                                 {% endfor %}
                                 <tr class="table-dark">
-                                    <td><strong>Total Expenses</strong></td>
+                                    <td><strong>{% trans "Total Expenses" %}</strong></td>
                                     <td><strong>{{ total_expense }}</strong></td>
                                 </tr>
                             </tbody>
@@ -68,14 +133,14 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Income Summary</h5>
+                        <h5>{% trans "Income Summary" %}</h5>
                     </div>
                     <div class="card-body">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Category</th>
-                                    <th>Total Income</th>
+                                    <th>{% trans "Category" %}</th>
+                                    <th>{% trans "Total Income" %}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -86,7 +151,7 @@
                                     </tr>
                                 {% endfor %}
                                 <tr class="table-dark">
-                                    <td><strong>Total Income</strong></td>
+                                    <td><strong>{% trans "Total Income" %}</strong></td>
                                     <td><strong>{{ total_income }}</strong></td>
                                 </tr>
                             </tbody>
@@ -101,7 +166,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Expense Breakdown</h5>
+                        <h5>{% trans "Expense Breakdown" %}</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="expenseChart"></canvas>
@@ -113,7 +178,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Income Breakdown</h5>
+                        <h5>{% trans "Income Breakdown" %}</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="incomeChart"></canvas>
@@ -124,370 +189,224 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Data for Expense Chart
-            const expenseData = {
-                labels: [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}],
-                datasets: [{
-                    data: [{% for expense in expense_summary %}{{ expense.total }},{% endfor %}],
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ],
-                    hoverBackgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ]
-                }]
-            };
+document.addEventListener('DOMContentLoaded', function () {
+    const colors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+        '#E57373', '#81C784', '#64B5F6', '#BA68C8', '#FFD54F', '#4DB6AC',
+        '#7986CB', '#A1887F', '#90A4AE', '#D32F2F', '#388E3C', '#1976D2',
+        '#7B1FA2', '#F57C00', '#C2185B', '#0097A7', '#5D4037', '#303F9F'
+    ];
 
-            // Config for Expense Chart
-            const expenseConfig = {
-                type: 'pie',
-                data: expenseData,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    }
-                }
-            };
+    function getColors(count) {
+        return colors.slice(0, count);
+    }
 
-            // Data for Income Chart
-            const incomeData = {
-                labels: [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}],
-                datasets: [{
-                    data: [{% for income in income_summary %}{{ income.total }},{% endfor %}],
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ],
-                    hoverBackgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                    ]
-                }]
-            };
+    const expenseLabels = [
+        {% for expense in expense_summary %}
+        '{{ expense.category__name|escapejs }}',
+        {% endfor %}
+    ];
+    const expenseValues = [
+        {% for expense in expense_summary %}
+        {{ expense.total }},
+        {% endfor %}
+    ];
 
-            // Config for Income Chart
-            const incomeConfig = {
-                type: 'pie',
-                data: incomeData,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    }
-                }
-            };
+    const incomeLabels = [
+        {% for income in income_summary %}
+        '{{ income.category__name|escapejs }}',
+        {% endfor %}
+    ];
+    const incomeValues = [
+        {% for income in income_summary %}
+        {{ income.total }},
+        {% endfor %}
+    ];
 
-            // Render Expense Chart
-            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
-            new Chart(expenseCtx, expenseConfig);
+    console.log("Expense Labels:", expenseLabels);
+    console.log("Expense Values:", expenseValues);
+    console.log("Income Labels:", incomeLabels);
+    console.log("Income Values:", incomeValues);
 
-            // Render Income Chart
-            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-            new Chart(incomeCtx, incomeConfig);
-        });
-    </script>
+    // Перевіряємо, чи немає undefined або NaN
+    function validateData(values, labels) {
+        return values.map((value, index) => ({
+            label: labels[index] || "Unknown",
+            value: isNaN(value) ? 0 : value
+        }));
+    }
 
+    const validExpenseData = validateData(expenseValues, expenseLabels);
+    const validIncomeData = validateData(incomeValues, incomeLabels);
 
-        <!-- Transactions Table -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5>Transactions</h5>
-            </div>
-            <div class="card-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Category</th>
-                            <th>Type</th>
-                            <th>Amount</th>
-                            <th>Description</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in transactions %}
-                            <tr>
-                                <td>{{ transaction.date }}</td>
-                                <td>{{ transaction.category.name }}</td>
-                                <td>{{ transaction.type }}</td>
-                                <td>{{ transaction.amount }}</td>
-                                <td>{{ transaction.description }}</td>
-                                <td>
-                                    <button 
-                                            type="button" 
-                                            class="btn btn-sm btn-custom-yellow" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editTransactionModal"
-                                            onclick="populateModal(
-                                                '{{ transaction.id }}',
-                                                '{{ transaction.date|date:'Y-m-d' }}',
-                                                '{{ transaction.category.id }}',
-                                                '{{ transaction.type }}',
-                                                '{{ transaction.amount }}',
-                                                '{{ transaction.description }}'
-                                            )"
-                                        >
-                                            Edit
-                                        </button>
-                                        <form method="POST" action="{% url 'delete_transaction' transaction.id %}" onsubmit="return confirm('Are you sure you want to delete this transaction?');" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-    
-        <script>
-            function populateModal(id, date, categoryId, type, amount, description) {
-                document.getElementById('transactionId').value = id;
-                document.getElementById('transactionDate').value = date;
-                document.getElementById('transactionCategory').value = categoryId;
-                document.getElementById('transactionType').value = type;
-                document.getElementById('transactionAmount').value = amount;
-                document.getElementById('transactionDescription').value = description;
-            }
-        </script>
+    console.log("Validated Expense Data:", validExpenseData);
+    console.log("Validated Income Data:", validIncomeData);
 
-    
-        <!-- Modal for Editing Transaction -->
-        <div class="modal fade" id="editTransactionModal" tabindex="-1" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editTransactionModalLabel">Edit Transaction</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="{% url 'edit_transaction' %}">
-                        {% csrf_token %}
-                        <div class="modal-body">
-                            <input type="hidden" name="transaction_id" id="transactionId">
-                            <div class="mb-3">
-                                <label for="transactionDate" class="form-label">Date</label>
-                                <input type="date" class="form-control" id="transactionDate" name="date" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transactionCategory" class="form-label">Category</label>
-                                <select class="form-control" id="transactionCategory" name="category_id" required>
-                                    {% for category in categories %}
-                                        <option value="{{ category.id }}">{{ category.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transactionType" class="form-label">Type</label>
-                                <select class="form-control" id="transactionType" name="type" required>
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transactionAmount" class="form-label">Amount</label>
-                                <input type="number" step="0.01" class="form-control" id="transactionAmount" name="amount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transactionDescription" class="form-label">Description</label>
-                                <textarea class="form-control" id="transactionDescription" name="description" rows="2" maxlength="30"></textarea>
-                            </div>
-                        </div>
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-success">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        const expenseData = {
+            labels: [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for expense in expense_summary %}parseFloat('{{ expense.total }}'.replace(",", ".")),{% endfor %}],
+                backgroundColor: getColors({{ expense_summary|length }}),
+                hoverBackgroundColor: getColors({{ expense_summary|length }})
+            }]
+        };
 
-    
-    
-    
-    
-    
-    
-    
-        <!-- Modal for adding transaction -->
-        <div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addTransactionModalLabel">Add Transaction</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" action="{% url 'add_transaction' table.id %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="transaction-date" class="form-label">Date</label>
-                                <input type="date" class="form-control" id="transaction-date" name="date" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transaction-type" class="form-label">Type</label>
-                                <select class="form-select" id="transaction-type" name="type" required>
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transaction-category" class="form-label">Category</label>
-                                <select class="form-select" id="transaction-category" name="category" required>
-                                    {% for category in categories %}
-                                        <option value="{{ category.id }}" data-type="{{ category.type }}">{{ category.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transaction-amount" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="transaction-amount" name="amount" step="0.01" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="transaction-description" class="form-label">Description</label>
-                                <textarea class="form-control" id="transaction-description" name="description" maxlength="30"></textarea>
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-success">Add Transaction</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        const incomeData = {
+            labels: [{% for income in income_summary %}'{{ income.category__name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for income in income_summary %}parseFloat('{{ income.total }}'.replace(",", ".")),{% endfor %}],
+                backgroundColor: getColors({{ income_summary|length }}),
+                hoverBackgroundColor: getColors({{ income_summary|length }})
+            }]
+        };
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const transactionType = document.getElementById('transaction-type');
-            const transactionCategory = document.getElementById('transaction-category');
-
-            // Function to filter categories based on the selected type
-            function filterCategories() {
-                const selectedType = transactionType.value;
-                const options = transactionCategory.querySelectorAll('option');
-
-                options.forEach(option => {
-                    if (option.dataset.type === selectedType) {
-                        option.style.display = 'block';
-                    } else {
-                        option.style.display = 'none';
-                    }
-                });
-
-                // Reset the selected category
-                transactionCategory.value = '';
-            }
-
-            // Add event listener for the type selection change
-            transactionType.addEventListener('change', filterCategories);
-
-            // Initial filter when the page loads
-            filterCategories();
-        });
-    </script>
-
-    <!-- Modal for managing categories -->
-    <div class="modal fade" id="manageCategoriesModal" tabindex="-1" aria-labelledby="manageCategoriesModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="manageCategoriesModalLabel">Manage Categories</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-{#                    {% if messages %}#}
-{#                        <div class="alert alert-info">#}
-{#                            {% for message in messages %}#}
-{#                                {{ message }}#}
-{#                            {% endfor %}#}
-{#                        </div>#}
-{#                    {% endif %}#}
-
-                    <form method="post" action="{% url 'manage_categories' table.id %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="category_name" class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="category_name" name="category_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category_type" class="form-label">Category Type</label>
-                            <select class="form-select" id="category_type" name="type" required>
-                                <option value="income">Income</option>
-                                <option value="expense">Expense</option>
-                            </select>
-                        </div>
-                        <div class="text-center">
-                                <button type="submit" class="btn btn-success">Add Category</button>
-                        </div>
-                    </form>
-                    <hr>
-                
-                    <!-- Income Categories -->
-                    <h6>Income Categories</h6>
-                    <ul class="list-unstyled">
-                        {% for category in categories %}
-                            {% if category.type == 'income' %}
-                                <li class="mb-3">
-                                    {{ category.name }}
-                                    <form method="post" action="{% url 'delete_category' table.id category.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm float-end">Delete</button>
-                                    </form>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                    
-                    <hr> <!-- Добавляем разделительную черту -->
-                    
-                    <!-- Expense Categories -->
-                    <h6>Expense Categories</h6>
-                    <ul class="list-unstyled">
-                        {% for category in categories %}
-                            {% if category.type == 'expense' %}
-                                <li class="mb-3">
-                                    {{ category.name }}
-                                    <form method="post" action="{% url 'delete_category' table.id category.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm float-end">Delete</button>
-                                    </form>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                    
-                    <a class="text-danger">When deleting a category, the record with that category will be deleted as well.</a>
-                
-                    <div class="text-center mb-3">
-                        <form method="post" action="{% url 'load_default_categories' table.id %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-secondary">Load Default Categories</button>
-                        </form>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-    <script>
-        window.onload = function() {
-            const message = document.getElementById('success-message');
-            if (message) {
-                setTimeout(function() {
-                    message.style.opacity = 0;
-                    setTimeout(function() {
-                        message.remove();
-                    }, 1000);
-                }, 3000); // Удаление через 3 секунды
+    const expenseConfig = {
+        type: 'pie',
+        data: expenseData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
             }
         }
+    };
+
+    const incomeConfig = {
+        type: 'pie',
+        data: incomeData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    };
+
+    const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+    new Chart(expenseCtx, expenseConfig);
+
+    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+    new Chart(incomeCtx, incomeConfig);
+});
+
     </script>
 
+
+   <div class="card mt-4">
+    <div class="card-header">
+        <h5>{% trans "Transactions" %}</h5>
+    </div>
+    <div class="card-body">
+
+        <!-- Поле для пошуку -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="form-control" placeholder="{% trans 'Search by description' %}" onkeyup="searchTable()">
+        </div>
+
+        <table class="table transaction-table" id="transactionTable">
+            <thead>
+                <tr class="transaction-row">
+                    <th onclick="sortTable(0)">{% trans "Date" %} ▲▼</th>
+                    <th>{% trans "Categories" %}</th>
+                    <th onclick="sortTable(2, true)">{% trans "Amount" %} ▲▼</th>
+                    <th>{% trans "Description" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr class="transaction-row {% if transaction.category.first.type == 'income' %}income{% else %}expense{% endif %}">
+                        <td>{{ transaction.date }}</td>
+                        <td>
+                            {% for category in transaction.category.all %}
+                                <span>{% trans category.name %}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if transaction.currency == "UAH" %}
+                                {{ transaction.amount }} UAH
+                            {% else %}
+                                {{ transaction.amount }} {{ transaction.currency }} ↔ {{ transaction.amount_in_uah }} UAH
+                            {% endif %}
+                        </td>
+                        <td class="description">{{ transaction.description }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-custom-yellow"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editTransactionModal"
+                                    onclick="populateModal(
+                                        '{{ transaction.id }}',
+                                        '{{ transaction.date|date:"Y-m-d" }}',
+                                        '{{ transaction.category.first.type }}',
+                                        '{{ transaction.category.first.id }}',
+                                        '{{ transaction.amount }}',
+                                        '{{ transaction.currency }}',
+                                        '{{ transaction.description }}'
+                                    )">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteTransactionModal"
+                                    onclick="setDeleteAction('{{ transaction.id }}')">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function sortTable(columnIndex, isNumeric = false) {
+        let table = document.getElementById("transactionTable");
+        let tbody = table.getElementsByTagName("tbody")[0];
+        let rows = Array.from(tbody.getElementsByTagName("tr"));
+
+        let ascending = table.dataset.sortOrder !== "asc";
+        table.dataset.sortOrder = ascending ? "asc" : "desc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.getElementsByTagName("td")[columnIndex].textContent.trim();
+            let cellB = rowB.getElementsByTagName("td")[columnIndex].textContent.trim();
+
+            if (isNumeric) {
+                cellA = parseFloat(cellA.replace(/[^0-9.-]+/g, "")) || 0;
+                cellB = parseFloat(cellB.replace(/[^0-9.-]+/g, "")) || 0;
+            }
+
+            if (cellA < cellB) return ascending ? -1 : 1;
+            if (cellA > cellB) return ascending ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("transactionTable");
+        let rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+        for (let row of rows) {
+            let descriptionCell = row.getElementsByClassName("description")[0];
+            let descriptionText = descriptionCell.textContent.toLowerCase();
+
+            if (descriptionText.includes(input)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+</script>
+
+    {% include "modals/add_transaction_modal.html" %}
+    {% include "modals/edit_transaction_modal.html" %}
+    {% include "modals/delete_transaction_modal.html" %}
+    </div>
 {% endblock %}

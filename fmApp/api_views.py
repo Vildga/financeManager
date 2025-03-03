@@ -1,20 +1,19 @@
-from rest_framework.views import APIView
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .models import Table, Transaction, Category
-from .serializers import TableSerializer, TransactionSerializer, CategorySerializer
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum
-from rest_framework.permissions import AllowAny
-from django.contrib.auth.models import User
-from social_django.utils import load_strategy, load_backend
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 from social_core.exceptions import MissingBackend
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from social_django.utils import load_backend, load_strategy
+
+from .models import Category, Table, Transaction
+from .serializers import CategorySerializer, TableSerializer, TransactionSerializer
 
 
 @login_required
@@ -30,7 +29,7 @@ def google_login_success(request):
     print("Refresh Token:", refresh_token)  # Отладка
 
     # Редиректим на Vue
-    frontend_url = 'http://localhost:5173/oauth/callback/'
+    frontend_url = "http://localhost:5173/oauth/callback/"
     redirect_url = f"{frontend_url}?token={access_token}&refresh={refresh_token}"
     print("Redirect URL:", redirect_url)  # Отладка
     return redirect(redirect_url)
@@ -47,23 +46,31 @@ def google_login_error(request):
 
 class LoginAPIView(APIView):
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        username = request.data.get("username")
+        password = request.data.get("password")
 
         # Проверка, что оба поля заполнены
         if not username or not password:
-            return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Аутентификация пользователя
         user = authenticate(request, username=username, password=password)
         if user is not None:
             refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                }
+            )
         else:
-            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Invalid username or password."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 
 class LogoutView(APIView):
@@ -79,7 +86,7 @@ class LogoutView(APIView):
             return Response({"error": str(e)}, status=400)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_tables(request):
     tables = Table.objects.filter(user=request.user)
@@ -87,7 +94,7 @@ def get_tables(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_table(request):
     serializer = TableSerializer(data=request.data)
@@ -97,7 +104,7 @@ def add_table(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_table(request, table_id):
     try:
@@ -108,98 +115,124 @@ def delete_table(request, table_id):
         return Response({"error": "Table not found."}, status=404)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
     user = request.user
-    return Response({
-        'username': user.username,
-        'email': user.email,
-    })
+    return Response(
+        {
+            "username": user.username,
+            "email": user.email,
+        }
+    )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def table_detail_api(request, table_id):
     table = get_object_or_404(Table, id=table_id, user=request.user)
 
     # Отримуємо транзакції з повними даними категорій
-    transactions = Transaction.objects.filter(category__table=table).order_by('-date')
+    transactions = Transaction.objects.filter(category__table=table).order_by("-date")
 
     # Сводка витрат
-    expense_summary = Transaction.objects.filter(category__table=table, type='expense') \
-        .values('category__name').annotate(total=Sum('amount'))
+    expense_summary = (
+        Transaction.objects.filter(category__table=table, type="expense")
+        .values("category__name")
+        .annotate(total=Sum("amount"))
+    )
 
     # Сводка доходів
-    income_summary = Transaction.objects.filter(category__table=table, type='income') \
-        .values('category__name').annotate(total=Sum('amount'))
+    income_summary = (
+        Transaction.objects.filter(category__table=table, type="income")
+        .values("category__name")
+        .annotate(total=Sum("amount"))
+    )
 
     # Категорії
     categories = Category.objects.filter(table=table)
 
     # Загальна сума доходів і витрат
-    total_income = Transaction.objects.filter(category__table=table, type='income') \
-        .aggregate(total=Sum('amount'))['total'] or 0
+    total_income = (
+        Transaction.objects.filter(category__table=table, type="income").aggregate(
+            total=Sum("amount")
+        )["total"]
+        or 0
+    )
 
-    total_expense = Transaction.objects.filter(category__table=table, type='expense') \
-        .aggregate(total=Sum('amount'))['total'] or 0
+    total_expense = (
+        Transaction.objects.filter(category__table=table, type="expense").aggregate(
+            total=Sum("amount")
+        )["total"]
+        or 0
+    )
 
     net_total = total_income - total_expense
 
     # Формуємо відповідь
     response_data = {
-        'table': TableSerializer(table).data,
-        'transactions': TransactionSerializer(transactions, many=True).data,
-        'expense_summary': list(expense_summary),
-        'income_summary': list(income_summary),
-        'categories': CategorySerializer(categories, many=True).data,
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'net_total': net_total
+        "table": TableSerializer(table).data,
+        "transactions": TransactionSerializer(transactions, many=True).data,
+        "expense_summary": list(expense_summary),
+        "income_summary": list(income_summary),
+        "categories": CategorySerializer(categories, many=True).data,
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "net_total": net_total,
     }
 
     return Response(response_data, status=200)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_transaction_api(request, table_id):
     table = get_object_or_404(Table, id=table_id, user=request.user)
 
     data = request.data
-    category_id = data.get('category')
+    category_id = data.get("category")
     category = get_object_or_404(Category, id=category_id, table=table)
 
     transaction = Transaction.objects.create(
-        date=data.get('date'),
-        type=data.get('type'),
+        date=data.get("date"),
+        type=data.get("type"),
         category=category,
-        amount=data.get('amount'),
-        description=data.get('description'),
-        table=table
+        amount=data.get("amount"),
+        description=data.get("description"),
+        table=table,
     )
 
     return Response(TransactionSerializer(transaction).data, status=201)
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_transaction_api(request, transaction_id):
     """
     Удаляет транзакцию по её ID.
     """
     try:
-        transaction = Transaction.objects.get(id=transaction_id, category__table__user=request.user)
+        transaction = Transaction.objects.get(
+            id=transaction_id, category__table__user=request.user
+        )
         transaction.delete()
-        return Response({"message": "Transaction deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"message": "Transaction deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
     except Transaction.DoesNotExist:
-        return Response({"error": "Transaction not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Transaction not found or access denied."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
 
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def edit_transaction_api(request, transaction_id):
-    transaction = get_object_or_404(Transaction, id=transaction_id, table__user=request.user)
+    transaction = get_object_or_404(
+        Transaction, id=transaction_id, table__user=request.user
+    )
     serializer = TransactionSerializer(transaction, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -207,7 +240,7 @@ def edit_transaction_api(request, transaction_id):
     return Response(serializer.errors, status=400)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_categories_api(request, table_id):
     table = get_object_or_404(Table, id=table_id, user=request.user)
@@ -216,7 +249,7 @@ def get_categories_api(request, table_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_category_api(request, table_id):
     table = get_object_or_404(Table, id=table_id, user=request.user)
@@ -227,15 +260,17 @@ def add_category_api(request, table_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['DELETE'])
+@api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
 def delete_category_api(request, category_id):
     category = get_object_or_404(Category, id=category_id, table__user=request.user)
     category.delete()
-    return Response({"message": "Category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    return Response(
+        {"message": "Category deleted successfully"}, status=status.HTTP_204_NO_CONTENT
+    )
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def load_default_categories(request, table_id):
     # Проверь, что таблица существует и принадлежит текущему пользователю
@@ -273,61 +308,70 @@ def load_default_categories(request, table_id):
     for cat in default_categories:
         Category.objects.get_or_create(name=cat["name"], type=cat["type"], table=table)
 
-    return Response({"message": "Standard categories have been loaded successfully."}, status=201)
+    return Response(
+        {"message": "Standard categories have been loaded successfully."}, status=201
+    )
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def register_api(request):
     """
     API для регистрации пользователя.
     """
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
-    password2 = request.data.get('password2')
+    username = request.data.get("username")
+    email = request.data.get("email")
+    password = request.data.get("password")
+    password2 = request.data.get("password2")
 
     # Проверяем пароли
     if password != password2:
-        return Response({"detail": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     # Проверяем существующего пользователя
     if User.objects.filter(username=username).exists():
-        return Response({"detail": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     # Создаём пользователя
     user = User.objects.create_user(username=username, email=email, password=password)
     user.save()
 
-    return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
+    return Response(
+        {"message": "User registered successfully!"}, status=status.HTTP_201_CREATED
+    )
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def social_login(request):
     """
     Обрабатывает код авторизации Google и возвращает JWT токены.
     """
-    code = request.data.get('code')  # Получаем код авторизации
-    redirect_uri = request.data.get('redirect_uri')  # URL редиректа
+    code = request.data.get("code")  # Получаем код авторизации
+    redirect_uri = request.data.get("redirect_uri")  # URL редиректа
 
     if not code or not redirect_uri:
         return Response({"error": "Missing code or redirect_uri"}, status=400)
 
     try:
         strategy = load_strategy(request)
-        backend = load_backend(strategy, 'google-oauth2', redirect_uri=redirect_uri)
+        backend = load_backend(strategy, "google-oauth2", redirect_uri=redirect_uri)
 
         # Завершаем процесс авторизации
         user = backend.auth_complete(code=code)
 
         # Генерация токенов
         refresh = RefreshToken.for_user(user)
-        return Response({
-            'accessToken': str(refresh.access_token),
-            'refreshToken': str(refresh),
-        })
+        return Response(
+            {
+                "accessToken": str(refresh.access_token),
+                "refreshToken": str(refresh),
+            }
+        )
     except MissingBackend:
         return Response({"error": "Invalid backend"}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-

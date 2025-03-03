@@ -1,14 +1,10 @@
-.card-header {
-    background: linear-gradient(90deg, #626cd6, #4d52ab) !important;
-    color: white;
-}
 
-.card-body p, .card-body ul {
-    font-size: 1.1em;
-    color: #333333;
-}
-
-.card-footer {
-    background-color: #f9f9f9;
-    color: #666666;
+.about-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
