@@ -36,20 +36,16 @@
                             <div class="col-md-6">
                                 <div class="card p-4">
                                     <h4>{% trans "Language Settings" %}</h4>
-                                    <form method="post" class="mt-3">
-                                        {% csrf_token %}
-                                        <div class="mb-3">
-                                            <label for="id_language" class="form-label">{% trans "Select language" %}:</label>
-                                            <select name="language" id="id_language" class="form-select">
-                                                {% for lang_code, lang_name in form.fields.language.choices %}
-                                                    <option value="{{ lang_code }}" {% if lang_code == current_language %}selected{% endif %}>
-                                                        {{ lang_name }}
-                                                    </option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <button type="submit" name="save" class="btn btn-success">{% trans "Save" %}</button>
-                                    </form>
+                                    <div class="mb-3">
+                                        <label for="id_language" class="form-label">{% trans "Select language" %}:</label>
+                                        <select name="language" id="id_language" class="form-select">
+                                            {% for lang_code, lang_name in form.fields.language.choices %}
+                                                <option value="{{ lang_code }}" {% if lang_code == current_language %}selected{% endif %}>
+                                                    {{ lang_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -190,5 +186,31 @@
                 form.action = `/delete-category/${categoryId}/`;
             }
         }
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("id_language").addEventListener("change", function () {
+            let selectedLanguage = this.value;
+
+            let formData = new FormData();
+            formData.append("language", selectedLanguage);
+
+            fetch("{% url 'settings' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Оновлення сторінки для зміни мови
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
     </script>
 {% endblock %}

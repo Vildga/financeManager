@@ -223,11 +223,6 @@ document.addEventListener('DOMContentLoaded', function () {
         {% endfor %}
     ];
 
-    console.log("Expense Labels:", expenseLabels);
-    console.log("Expense Values:", expenseValues);
-    console.log("Income Labels:", incomeLabels);
-    console.log("Income Values:", incomeValues);
-
     // Перевіряємо, чи немає undefined або NaN
     function validateData(values, labels) {
         return values.map((value, index) => ({
@@ -235,12 +230,6 @@ document.addEventListener('DOMContentLoaded', function () {
             value: isNaN(value) ? 0 : value
         }));
     }
-
-    const validExpenseData = validateData(expenseValues, expenseLabels);
-    const validIncomeData = validateData(incomeValues, incomeLabels);
-
-    console.log("Validated Expense Data:", validExpenseData);
-    console.log("Validated Income Data:", validIncomeData);
 
         const expenseData = {
             labels: [{% for expense in expense_summary %}'{{ expense.category__name }}',{% endfor %}],

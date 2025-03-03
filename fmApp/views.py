@@ -431,7 +431,22 @@ class SettingsView(LoginRequiredMixin, UpdateView):
             "current_language": self.request.user.language,
         })
 
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def post(self, request, *args, **kwargs):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            language = request.POST.get("language")
+            if language:
+                user = self.get_object()
+                user.language = language
+                user.save()
+
+                request.session["django_language"] = language
+                activate(language)
+
+                return JsonResponse({"success": True})
+
         if "add_category" in request.POST:
             category_form = CategoryForm(request.POST)
             if category_form.is_valid():
