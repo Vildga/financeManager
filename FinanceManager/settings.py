@@ -193,8 +193,10 @@ REST_FRAMEWORK = {
 }
 
 # settings.py
-# CSRF_TRUSTED_ORIGINS = ['https://vildga.ddns.net']
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://vildga.ddns.net",
+    "http://localhost:5173"
+]
 
 
 SIMPLE_JWT = {
