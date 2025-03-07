@@ -64,6 +64,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "fmApp.middleware.LoginRequiredMiddleware",
     "fmApp.middleware.LanguageMiddleware",
+    "fmApp.middleware.ThemeMiddleware",
 ]
 
 CORS_ALLOWED_ORIGINS = [

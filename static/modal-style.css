@@ -1,0 +1,95 @@
+/* ====== Загальні стилі для модального вікна ====== */
+.modal-content {
+    background-color: #ffffff;
+    color: #23272a;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Заголовок модального вікна */
+.modal-header {
+    background-color: #626cd6;
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* Кнопка закриття */
+.btn-close {
+    background: transparent;
+    border: none;
+}
+
+/* Поля введення */
+.modal-body .form-control,
+.modal-body .form-select {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.2s ease-in-out;
+    background-color: #ffffff;
+    color: #23272a;
+}
+
+/* Поля введення при фокусі */
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    border-color: #626cd6;
+    box-shadow: 0 0 5px rgba(98, 108, 214, 0.4);
+}
+
+/* Кнопка додавання транзакції */
+.btn-add-transaction {
+    background-color: #198754;
+    color: white;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.btn-add-transaction:hover {
+    background-color: #156f42;
+}
+
+/* ====== Темна тема для модального вікна ====== */
+body.dark-theme .modal-content {
+    background-color: #2c2f33;
+    color: #e0e0e0;
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Темна тема заголовка */
+body.dark-theme .modal-header {
+    background-color: #626cd6;
+    color: #ffffff;
+}
+
+/* Темна тема для полів введення */
+body.dark-theme .modal-body .form-control,
+body.dark-theme .modal-body .form-select {
+    background-color: #23272a;
+    color: #e0e0e0;
+    border: 1px solid #99aab5;
+}
+
+/* Поля введення при фокусі в темній темі */
+body.dark-theme .modal-body .form-control:focus,
+body.dark-theme .modal-body .form-select:focus {
+    border-color: #626cd6;
+    box-shadow: 0 0 5px rgba(98, 108, 214, 0.4);
+}
+
+/* Темна тема кнопки закриття */
+body.dark-theme .btn-close {
+    filter: invert(1);
+}
+
+/* Темна тема для кнопки додавання транзакції */
+body.dark-theme .btn-add-transaction {
+    background-color: #198754;
+}
+
+body.dark-theme .btn-add-transaction:hover {
+    background-color: #156f42;
+}

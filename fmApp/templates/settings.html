@@ -3,134 +3,161 @@
 {% load i18n %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static '/settings.css' %}">
+    <link rel="stylesheet" href="{% static 'settings.css' %}">
+    <link rel="stylesheet" href="{% static 'modal-style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
 {% block content %}
-    <div class="container mt-4">
-        <h2 class="mb-4">{% trans "Settings" %}</h2>
+    <div class="container mt-5">
+        <div class="settings-container">
+            <h2 class="mb-4">{% trans "Settings" %}</h2>
 
-        {% if messages %}
-            <div id="success-message" class="alert alert-success" role="alert">
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            </div>
-        {% endif %}
+            {% if messages %}
+                <div id="success-message" class="alert alert-success" role="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-        <div class="accordion" id="settingsAccordion">
-            <!-- Customization Section -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingCustomization">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustomization" aria-expanded="true" aria-controls="collapseCustomization">
-                        {% trans "Customization" %}
-                    </button>
-                </h2>
-                <div id="collapseCustomization" class="accordion-collapse collapse show" aria-labelledby="headingCustomization" data-bs-parent="#settingsAccordion">
-                    <div class="accordion-body">
-                        <div class="row">
-                            <!-- Language Settings -->
-                            <div class="col-md-6">
-                                <div class="card p-4">
-                                    <h4>{% trans "Language Settings" %}</h4>
-                                    <div class="mb-3">
-                                        <label for="id_language" class="form-label">{% trans "Select language" %}:</label>
-                                        <select name="language" id="id_language" class="form-select">
-                                            {% for lang_code, lang_name in form.fields.language.choices %}
-                                                <option value="{{ lang_code }}" {% if lang_code == current_language %}selected{% endif %}>
-                                                    {{ lang_name }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
+            <div class="accordion" id="settingsAccordion">
+                <!-- Customization Section -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingCustomization">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustomization" aria-expanded="true" aria-controls="collapseCustomization">
+                            <i class="bi bi-palette me-2"></i> {% trans "Customization" %}
+                        </button>
+                    </h2>
+                    <div id="collapseCustomization" class="accordion-collapse collapse show" aria-labelledby="headingCustomization" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <!-- Language Settings -->
+                                <div class="col-md-6">
+                                    <div class="card p-4">
+                                        <h4><i class="bi bi-globe me-2"></i> {% trans "Language Settings" %}</h4>
+                                        <div class="mb-3">
+                                            <label for="id_language" class="form-label">{% trans "Select language" %}:</label>
+                                            <select name="language" id="id_language" class="form-select">
+                                                {% for lang_code, lang_name in form.fields.language.choices %}
+                                                    <option value="{{ lang_code }}" {% if lang_code == current_language %}selected{% endif %}>
+                                                        {{ lang_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Theme Settings -->
-                            <div class="col-md-6">
-                                <div class="card p-4">
-                                    <h4>{% trans "Theme Settings" %}</h4>
-                                    <p class="text-muted">{% trans "Coming soon..." %}</p>
+                                <!-- Theme Settings -->
+                                <div class="col-md-6">
+                                    <div class="card p-4">
+                                        <h4><i class="bi bi-moon-stars me-2"></i> {% trans "Theme Settings" %}</h4>
+                                        <div class="mb-3">
+                                            <label for="id_theme" class="form-label">{% trans "Select theme" %}:</label>
+                                            <select name="theme" id="id_theme" class="form-select">
+                                                <option value="light" {% if current_theme == "light" %}selected{% endif %}>{% trans "Light" %}</option>
+                                                <option value="dark" {% if current_theme == "dark" %}selected{% endif %}>{% trans "Dark" %}</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Categories Section -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingCategories">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCategories" aria-expanded="false" aria-controls="collapseCategories">
-                        {% trans "Categories" %}
-                    </button>
-                </h2>
-
-                <div id="collapseCategories" class="accordion-collapse collapse" aria-labelledby="headingCategories" data-bs-parent="#settingsAccordion">
-                    <div class="accordion-body">
-                        <div class="card p-4 mt-4">
-                            <h4>{% trans "Manage Categories" %}</h4>
-                            <form method="post" class="mt-3">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="id_name" class="form-label">{% trans "Category Name" %}:</label>
-                                    {{ category_form.name }}
-                                </div>
-                                <div class="mb-3">
-                                    <label for="id_type" class="form-label">{% trans "Category Type" %}:</label>
-                                    {{ category_form.type }}
-                                </div>
-                                <button type="submit" name="add_category" class="btn btn-success">{% trans "Add Category" %}</button>
-                            </form>
-                        </div>
-
-                        <!-- Search Categories -->
-                        <div class="search-container mt-3">
-                            <input type="text" id="searchInput" class="form-control" placeholder="{% trans 'Search categories' %}" onkeyup="searchCategories()">
-                        </div>
-
-                        <!-- Categories Table -->
-                        <div class="card p-4 mt-3">
-                            <h4>{% trans "Your Categories" %}</h4>
-                            <table class="table category-table" id="categoryTable">
-                                <thead>
-                                    <tr>
-                                        <th>{% trans "Category Name" %}</th>
-                                        <th>{% trans "Type" %}</th>
-                                        <th>{% trans "Actions" %}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for category in categories %}
-                                        <tr>
-                                            <td>{% trans category.name %}</td>
-                                            <td>{{ category.get_type_display }}</td>
-                                            <td>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
-                                                        data-bs-target="#deleteCategoryModal" onclick="setDeleteCategoryId('{{ category.id }}')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="3">{% trans "No categories added yet." %}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                                    <!-- Завантажити базові категорії -->
-                <div class="text-center mt-3">
-                    <form method="post" action="{% url 'load_default_categories' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-download"></i> {% trans "Load Default Categories" %}
+                <!-- Categories Section -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingCategories">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCategories" aria-expanded="false" aria-controls="collapseCategories">
+                            <i class="bi bi-folder me-2"></i> {% trans "Categories" %}
                         </button>
-                    </form>
-                </div>
+                    </h2>
+
+                    <div id="collapseCategories" class="accordion-collapse collapse" aria-labelledby="headingCategories" data-bs-parent="#settingsAccordion">
+                        <div class="accordion-body">
+                            <div class="card p-4">
+                                <!-- Заголовок та іконка -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="m-0"><i class="bi bi-folder-plus me-2"></i> {% trans "Manage Categories" %}</h4>
+                                </div>
+
+                                <!-- Форма в 2 колонки -->
+                                <form id="addCategoryForm" method="post">
+                                    {% csrf_token %}
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="id_name" class="form-label">{% trans "Category Name" %}:</label>
+                                            <input type="text" id="id_name" name="name" class="form-control category-name-field" placeholder="{% trans 'Enter category name' %}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="id_type" class="form-label">{% trans "Category Type" %}:</label>
+                                            {{ category_form.type }}
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-plus-lg"></i> {% trans "Add Category" %}
+                                        </button>
+                                    </div>
+                                </form>
+
+                            </div>
+
+                            <div class="card p-4 mt-3">
+                                <!-- Контейнер для заголовка та пошуку -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="m-0">{% trans "Your Categories" %}</h4>
+                                    <div class="search-container">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" id="searchInput" class="form-control" placeholder="{% trans 'Search categories' %}" onkeyup="searchCategories()">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Таблиця категорій -->
+                                <table class="table category-table" id="categoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Category Name" %}</th>
+                                            <th>{% trans "Type" %}</th>
+                                            <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in categories %}
+                                            <tr>
+                                                <td>{% trans category.name %}</td>
+                                                <td>{{ category.get_type_display }}</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#deleteCategoryModal" onclick="setDeleteCategoryId('{{ category.id }}')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="3">{% trans "No categories added yet." %}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <form method="post" action="{% url 'load_default_categories' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-download"></i> {% trans "Load Default Categories" %}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,18 +170,28 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCategoryModalLabel">{% trans "Confirm Deletion" %}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="deleteCategoryModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                        {% trans "Confirm Deletion" %}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
                 </div>
-                <div class="modal-body">
-                    {% trans "Are you sure you want to delete this category?" %}
+                <div class="modal-body text-center">
+                    <p class="delete-text">
+                        <i class="bi bi-trash-fill text-danger me-2"></i>
+                        {% trans "Are you sure you want to delete this category?" %}
+                    </p>
                 </div>
-                <div class="modal-footer">
-                    <form id="deleteCategoryForm" method="post" action="">
+                <div class="modal-footer d-flex justify-content-center">
+                    <form method="post" id="deleteCategoryForm">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i> {% trans "Cancel" %}
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> {% trans "Delete" %}
+                        </button>
                     </form>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                 </div>
             </div>
         </div>
@@ -212,5 +249,96 @@
             .catch(error => console.error('Error:', error));
         });
     });
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelector("form#addCategoryForm").addEventListener("submit", function (event) {
+            event.preventDefault();  // Запобігаємо стандартному надсиланню форми
+
+            let formData = new FormData(this);
+
+            fetch("{% url 'add_category' %}", { // Замініть на вашу URL-адресу
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let categoryTable = document.getElementById("categoryTable").getElementsByTagName('tbody')[0];
+
+                    // Додаємо новий рядок у таблицю
+                    let newRow = categoryTable.insertRow();
+                    newRow.innerHTML = `
+                        <td>${data.category_name}</td>
+                        <td>${data.category_type}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#deleteCategoryModal" onclick="setDeleteCategoryId('${data.category_id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+
+                    // Очищуємо форму
+                    document.getElementById("addCategoryForm").reset();
+                } else {
+                    console.error("Помилка додавання:", data.errors);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const themeSelect = document.getElementById("id_theme");
+
+    // Функція для зміни теми
+    function applyTheme(theme) {
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem("selectedTheme", theme);
+    }
+
+    // Завантажуємо збережену тему або за замовчуванням "light"
+    const savedTheme = localStorage.getItem("selectedTheme") || "{{ current_theme|default:'light' }}";
+    applyTheme(savedTheme);
+    themeSelect.value = savedTheme;
+
+    // Слухаємо зміну теми
+    themeSelect.addEventListener("change", function () {
+        const selectedTheme = this.value;
+        applyTheme(selectedTheme);
+
+        // Надсилаємо AJAX-запит на сервер
+        let formData = new FormData();
+        formData.append("theme", selectedTheme);
+
+        fetch("{% url 'settings' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("✅ Тема змінена на:", selectedTheme);
+                setTimeout(() => {
+                    location.reload(); // 🔄 Перезавантажуємо сторінку через 300 мс
+                }, 300);
+            } else {
+                console.error("❌ Помилка зміни теми:", data.errors);
+            }
+        })
+        .catch(error => console.error("❌ Помилка запиту:", error));
+    });
+});
+
     </script>
 {% endblock %}

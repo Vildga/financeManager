@@ -28,8 +28,16 @@ class CustomUser(AbstractUser):
         ("uk", "Ukrainian"),
     ]
 
+    THEME_CHOICES = [
+        ("light", "Light"),
+        ("dark", "Dark"),
+    ]
+
     language = models.CharField(
         max_length=10, choices=LANGUAGE_CHOICES, default="en", verbose_name="Language"
+    )
+    theme = models.CharField(
+        max_length=10, choices=THEME_CHOICES, default="light", verbose_name="Theme"
     )
     objects = CustomUserManager()
 

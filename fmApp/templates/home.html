@@ -7,35 +7,34 @@
 {% block head %}
     <link rel="stylesheet" href="{% static 'home-style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
 {% block content %}
-
     <div class="container-fluid py-4">
-        <div class="row">
+        <div class="row justify-content-center">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 bg-light sidebar py-3">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary">{% trans "Your Tables" %}</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tableModal">
-                        + {% trans "Create Table" %}
+            <nav class="col-md-3 col-lg-2 sidebar">
+                <div class="text-center mb-3">
+                    <h3 class="sidebar-title">{% trans "Your Tables" %}</h3>
+                    <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#tableModal">
+                        <i class="bi bi-plus-lg"></i> {% trans "Create Table" %}
                     </button>
                 </div>
-                <ul class="list-group list-group-flush">
+
+                <ul class="list-group">
                     {% for table in tables %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{% url 'table_detail' table.id %}" class="text-decoration-none text-dark w-100">
-                                <div class="d-flex flex-column w-100">
-                                    <strong>{{ table.name }}</strong>
-                                    <p class="text-muted small mb-0">{{ table.description }}</p>
-                                </div>
+                            <a href="{% url 'table_detail' table.id %}" class="text-decoration-none flex-grow-1 table-link">
+                                <strong>{{ table.name }}</strong>
+                                <p class="text-muted small mb-0">{{ table.description }}</p>
                             </a>
-                            <button class="btn btn-outline-danger delete-btn"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteModal"
-                                data-table-id="{{ table.id }}">
-                                {% trans "Delete" %}
+                            <button class="btn btn-sm btn-outline-danger delete-btn"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal"
+                                    data-table-id="{{ table.id }}">
+                                <i class="bi bi-trash"></i>
                             </button>
                         </li>
                     {% empty %}
@@ -45,11 +44,9 @@
             </nav>
 
             <!-- Main Content -->
-            <main class="col-md-9 col-lg-10 d-flex flex-column align-items-center justify-content-center text-center">
-                <h1 class="display-5">{% trans "Welcome, " %}{{ request.user.first_name }}!</h1>
-                <p class="lead">
-                    {% trans "Select a table to manage your data or create a new one using the button on the left." %}
-                </p>
+            <main class="col-md-9 col-lg-10 d-flex flex-column align-items-center justify-content-center text-center main-content">
+                <h1 class="display-6">{% trans "Welcome, " %}{{ request.user.first_name }}!</h1>
+                <p class="lead">{% trans "Select a table to manage your data or create a new one using the button on the left." %}</p>
             </main>
         </div>
     </div>
@@ -57,30 +54,16 @@
     {% include 'modals/delete_table_modal.html' %}
     {% include 'modals/create_table_modal.html' %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const deleteModal = document.getElementById('deleteModal');
-        const tableIdInput = document.getElementById('table-id');
+        document.addEventListener("DOMContentLoaded", function () {
+            const deleteModal = document.getElementById('deleteModal');
+            const tableIdInput = document.getElementById('table-id');
 
-        deleteModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const tableId = button.getAttribute('data-table-id');
-            tableIdInput.value = tableId;
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const tableId = button.getAttribute('data-table-id');
+                tableIdInput.value = tableId;
+            });
         });
     </script>
-
-    <script>
-        window.onload = function() {
-            const message = document.getElementById('success-message');
-            if (message) {
-                setTimeout(function() {
-                    message.style.opacity = 0;
-                    setTimeout(function() {
-                        message.remove();
-                    }, 1000);
-                }, 3000);
-            }
-        }
-    </script>
-</div>
 {% endblock %}

@@ -413,14 +413,12 @@ class SettingsView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.request.session["django_language"] = self.request.user.language
-        activate(self.request.user.language)
+        self._apply_user_preferences()
         return response
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            activate(request.user.language)
-            request.session["django_language"] = request.user.language
+            self._apply_user_preferences()
 
         category_form = CategoryForm()
         categories = Category.objects.filter(user=request.user)
@@ -428,7 +426,8 @@ class SettingsView(LoginRequiredMixin, UpdateView):
             "form": self.get_form(),
             "category_form": category_form,
             "categories": categories,
-            "current_language": self.request.user.language,
+            "current_language": request.user.language,
+            "current_theme": request.user.theme,
         })
 
     def dispatch(self, *args, **kwargs):
@@ -436,36 +435,37 @@ class SettingsView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            language = request.POST.get("language")
-            if language:
-                user = self.get_object()
-                user.language = language
-                user.save()
-
-                request.session["django_language"] = language
-                activate(language)
-
-                return JsonResponse({"success": True})
-
-        if "add_category" in request.POST:
-            category_form = CategoryForm(request.POST)
-            if category_form.is_valid():
-                category = category_form.save(commit=False)
-                category.user = request.user
-
-                existing_category = Category.objects.filter(
-                    name=category.name, type=category.type, user=request.user
-                ).exists()
-
-                if existing_category:
-                    messages.warning(request, "Ця категорія вже існує!")
-                else:
-                    category.save()
-                    messages.success(request, "Категорію успішно додано!")
-
-            return redirect("settings")
+            return self._handle_ajax_request(request)
 
         return super().post(request, *args, **kwargs)
+
+    def _handle_ajax_request(self, request):
+        user = self.get_object()
+        updated = False
+
+        if "language" in request.POST:
+            language = request.POST["language"]
+            user.language = language
+            request.session["django_language"] = language
+            activate(language)
+            updated = True
+
+        if "theme" in request.POST:
+            theme = request.POST["theme"]
+            user.theme = theme
+            updated = True
+
+        if updated:
+            user.save()
+            return JsonResponse({"success": True})
+
+        return JsonResponse({"success": False}, status=400)
+
+    def _apply_user_preferences(self):
+        """Застосовує вибрану користувачем мову та тему."""
+        activate(self.request.user.language)
+        self.request.session["django_language"] = self.request.user.language
+        self.request.session["theme"] = self.request.user.theme
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
@@ -479,13 +479,15 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class CategoryAddView(CreateView):
+class CategoryAddView(LoginRequiredMixin, CreateView):
     model = Category
     form_class = CategoryForm
     success_url = reverse_lazy('settings')
 
     def form_valid(self, form):
-        category = form.save()
+        category = form.save(commit=False)
+        category.user = self.request.user
+        category.save()
         return JsonResponse({
             'success': True,
             'category_id': category.id,
