@@ -103,82 +103,115 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
     context_object_name = "table"
     pk_url_kwarg = "table_id"
 
+    # Ці змінні будемо виставляти в dispatch
+    table = None
+    selected_month = None
+    selected_year = None
+
     def dispatch(self, request, *args, **kwargs):
-        table = self.get_object()  # Получаем текущую таблицу
-        query_params = request.GET.copy()
+        self.table = self.get_object()
+        result = self._get_month_and_year_from_request(request)
+        # якщо result – це HttpResponseRedirect, повертаймо його:
+        if isinstance(result, HttpResponseRedirect):
+            return result
 
-        # 1. Получаем текущий месяц и год
-        current_month = now().month
-        current_year = now().year
+        self.selected_month, self.selected_year = result
 
-        # 2. Если month или year нет в GET-параметрах — добавляем их
-        if "month" not in request.GET or "year" not in request.GET:
-            query_params["month"] = str(current_month)
-            query_params["year"] = str(current_year)
-            return redirect(f"{request.path}?{query_params.urlencode()}")
-
-        selected_month = int(request.GET.get("month", current_month))
-        selected_year = int(request.GET.get("year", current_year))
-
-        # 3. Проверяем, есть ли транзакции за указанный месяц
-        has_transactions = Transaction.objects.filter(
-            table=table, date__year=selected_year, date__month=selected_month
-        ).exists()
-
-        # 4. Если за этот месяц транзакций нет – берём последнюю доступную дату
-        if not has_transactions:
-            last_transaction = (
-                Transaction.objects.filter(table=table)
-                .aggregate(last_date=Max("date"))
-            )
-
-            if last_transaction["last_date"]:
-                last_date = last_transaction["last_date"]
-                query_params["month"] = str(last_date.month)
-                query_params["year"] = str(last_date.year)
-                return redirect(f"{request.path}?{query_params.urlencode()}")
+        if not self._has_transactions_for_month():
+            last_date = self._get_last_transaction_date()
+            if last_date:
+                return self._redirect_to(last_date.month, last_date.year)
 
         return super().dispatch(request, *args, **kwargs)
 
+    def _get_month_and_year_from_request(self, request):
+        """
+        Повертає (month, year) з GET-параметрів або виставляє поточні.
+        Якщо їх немає, робимо редирект із доданими параметрами.
+        """
+        query_params = request.GET.copy()
+
+        month = query_params.get("month")
+        year = query_params.get("year")
+        current_month = now().month
+        current_year = now().year
+
+        if not month or not year:
+            # Робимо редірект на поточний місяць/рік
+            query_params["month"] = str(current_month)
+            query_params["year"] = str(current_year)
+            return self._redirect_to_month_year_instant(request, query_params)
+
+        # Якщо GET передав якісь значення, конвертуємо в int
+        try:
+            month_int = int(month)
+            year_int = int(year)
+        except ValueError:
+            month_int = current_month
+            year_int = current_year
+
+        return month_int, year_int
+
+
+    def _redirect_to_month_year_instant(self, request, query_params):
+        url = f"{request.path}?{query_params.urlencode()}"
+        # Просто повертаємо redirect тут, і все
+        return redirect(url)
+
+    def _has_transactions_for_month(self):
+        """
+        Перевіряє, чи є транзакції за self.selected_month, self.selected_year.
+        """
+        return Transaction.objects.filter(
+            table=self.table,
+            date__year=self.selected_year,
+            date__month=self.selected_month
+        ).exists()
+
+    def _get_last_transaction_date(self):
+        """
+        Повертає max(date) для таблиці або None, якщо транзакцій немає.
+        """
+        result = Transaction.objects.filter(table=self.table).aggregate(last_date=Max("date"))
+        return result["last_date"]
+
+    def _redirect_to(self, month, year):
+        """Редіректить на той самий URL, але з переданими month/year."""
+        query_params = self.request.GET.copy()
+        query_params["month"] = str(month)
+        query_params["year"] = str(year)
+        url = f"{self.request.path}?{query_params.urlencode()}"
+        return redirect(url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        table = self.get_object()
-
-        selected_month = self.request.GET.get("month")
-        selected_year = self.request.GET.get("year")
-
-        selected_month = (
-            int(selected_month)
-            if selected_month and selected_month.isdigit()
-            else now().month
+        # table уже збережений у self.table
+        # selected_month/selected_year уже парсені
+        transactions = (
+            Transaction.objects
+            .filter(
+                table=self.table,
+                date__year=self.selected_year,
+                date__month=self.selected_month
+            )
+            .prefetch_related("category")
         )
-        selected_year = (
-            int(selected_year)
-            if selected_year and selected_year.isdigit()
-            else now().year
-        )
-
-        print(f"Selected Month: {selected_month}, Selected Year: {selected_year}, Table: *{table}*")
-        print(f"Table ID: {table.id}")
-        transactions = Transaction.objects.filter(
-            table=table, date__year=selected_year, date__month=selected_month
-        ).prefetch_related("category")
-
-        print(f"Transactions count: {transactions.count()}")
-        print(f"Transactions: {list(transactions.values())}")
 
         user_categories = Category.objects.filter(user=self.request.user)
 
         summaries = (
-            transactions.values("category__name", "category__type")
+            transactions
+            .values("category__name", "category__type")
             .annotate(total=Sum("amount_in_uah"))
             .order_by("category__name")
         )
 
         for summary in summaries:
-            summary["category__name"] = _(summary["category__name"])
-            summary["total"] = Decimal(str(summary["total"]).replace(",", "."))
+            # Захист від None
+            cat_name = summary["category__name"] or ""
+            summary["category__name"] = _(cat_name)
+            total_str = summary["total"] or 0
+            summary["total"] = Decimal(str(total_str).replace(",", "."))
 
         income_summary = [s for s in summaries if s["category__type"] == "income"]
         expense_summary = [s for s in summaries if s["category__type"] == "expense"]
@@ -188,53 +221,65 @@ class TableDetailView(IsTableOwnerMixin, DetailView):
             "expense": sum(s["total"] for s in expense_summary),
         }
 
+        # Дістаємо усі доступні (рік, місяць) для цієї таблиці
         available_years_months = (
-            Transaction.objects.filter(table=table)
+            Transaction.objects.filter(table=self.table)
             .annotate(year=ExtractYear("date"), month=ExtractMonth("date"))
             .values("year", "month")
             .distinct()
             .order_by("-year", "month")
         )
 
-        available_years = sorted(
-            set(item["year"] for item in available_years_months), reverse=True
-        )
-        available_months = sorted(
-            set(
-                item["month"]
-                for item in available_years_months
-                if item["year"] == selected_year
-            )
-        )
+        available_years = sorted({item["year"] for item in available_years_months}, reverse=True)
+        months_same_year = [item["month"] for item in available_years_months if item["year"] == self.selected_year]
+        available_months = sorted(months_same_year)
         available_months = [
             {"month": m, "month_name": MONTH_NAMES[m]} for m in available_months
         ]
 
-        context.update(
-            {
-                "transactions": transactions,
-                "categories": user_categories,
-                "expense_summary": expense_summary,
-                "income_summary": income_summary,
-                "total_income": totals["income"],
-                "total_expense": totals["expense"],
-                "net_total": totals["income"] - totals["expense"],
-                "selected_month": selected_month,
-                "selected_year": selected_year,
-                "available_months": available_months,
-                "available_years": available_years,
-                "month_names": MONTH_NAMES,
-                "currency_choices": Transaction.CurrencyChoices.choices,
-            }
-        )
-
+        context.update({
+            "transactions": transactions,
+            "categories": user_categories,
+            "expense_summary": expense_summary,
+            "income_summary": income_summary,
+            "total_income": totals["income"],
+            "total_expense": totals["expense"],
+            "net_total": totals["income"] - totals["expense"],
+            "selected_month": self.selected_month,
+            "selected_year": self.selected_year,
+            "available_months": available_months,
+            "available_years": available_years,
+            "month_names": MONTH_NAMES,
+            "currency_choices": Transaction.CurrencyChoices.choices,
+        })
         return context
+
+
+class RedirectNow(Exception):
+    """
+    Власний виняток, щоб припинити процес і зробити редірект "до того, як"
+    базовий class-based view встигне викликати get_context_data.
+
+    Суть: в _redirect_to_month_year_instant() замість return redirect(),
+    кинемо RedirectNow, який перехопимо у dispatch().
+    """
+
+# У dispatch для обробки:
+def dispatch(self, request, *args, **kwargs):
+    try:
+        self.table = self.get_object()
+        self.selected_month, self.selected_year = self._get_month_and_year_from_request(request)
+        if not self._has_transactions_for_month():
+            ...
+    except RedirectNow as exc:
+        return redirect(str(exc))
+    return super().dispatch(request, *args, **kwargs)
 
 
 class AddTransactionView(IsTableOwnerMixin, View):
     def post(self, request, table_id):
 
-        table = self.get_table()
+        table = get_object_or_404(Table, id=table_id)
 
         transaction_date = request.POST.get("date")
         category_ids = request.POST.getlist("category")
@@ -368,14 +413,12 @@ class SettingsView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.request.session["django_language"] = self.request.user.language
-        activate(self.request.user.language)
+        self._apply_user_preferences()
         return response
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            activate(request.user.language)
-            request.session["django_language"] = request.user.language
+            self._apply_user_preferences()
 
         category_form = CategoryForm()
         categories = Category.objects.filter(user=request.user)
@@ -383,29 +426,46 @@ class SettingsView(LoginRequiredMixin, UpdateView):
             "form": self.get_form(),
             "category_form": category_form,
             "categories": categories,
-            "current_language": self.request.user.language,
+            "current_language": request.user.language,
+            "current_theme": request.user.theme,
         })
 
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def post(self, request, *args, **kwargs):
-        if "add_category" in request.POST:
-            category_form = CategoryForm(request.POST)
-            if category_form.is_valid():
-                category = category_form.save(commit=False)
-                category.user = request.user
-
-                existing_category = Category.objects.filter(
-                    name=category.name, type=category.type, user=request.user
-                ).exists()
-
-                if existing_category:
-                    messages.warning(request, "Ця категорія вже існує!")
-                else:
-                    category.save()
-                    messages.success(request, "Категорію успішно додано!")
-
-            return redirect("settings")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return self._handle_ajax_request(request)
 
         return super().post(request, *args, **kwargs)
+
+    def _handle_ajax_request(self, request):
+        user = self.get_object()
+        updated = False
+
+        if "language" in request.POST:
+            language = request.POST["language"]
+            user.language = language
+            request.session["django_language"] = language
+            activate(language)
+            updated = True
+
+        if "theme" in request.POST:
+            theme = request.POST["theme"]
+            user.theme = theme
+            updated = True
+
+        if updated:
+            user.save()
+            return JsonResponse({"success": True})
+
+        return JsonResponse({"success": False}, status=400)
+
+    def _apply_user_preferences(self):
+        """Застосовує вибрану користувачем мову та тему."""
+        activate(self.request.user.language)
+        self.request.session["django_language"] = self.request.user.language
+        self.request.session["theme"] = self.request.user.theme
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
@@ -419,13 +479,15 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class CategoryAddView(CreateView):
+class CategoryAddView(LoginRequiredMixin, CreateView):
     model = Category
     form_class = CategoryForm
     success_url = reverse_lazy('settings')
 
     def form_valid(self, form):
-        category = form.save()
+        category = form.save(commit=False)
+        category.user = self.request.user
+        category.save()
         return JsonResponse({
             'success': True,
             'category_id': category.id,

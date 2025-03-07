@@ -1,4 +1,4 @@
-
+/* ====== Основной контейнер ====== */
 .about-container {
     max-width: 800px;
     margin: auto;
@@ -7,4 +7,100 @@
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ====== Заголовки ====== */
+.about-container h1 {
+    color: #23272a;
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.about-container h3 {
+    color: #626cd6;
+    margin-top: 20px;
+}
+
+/* ====== Текст ====== */
+.about-container p {
+    color: #2c2f33;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* ====== Ссылки ====== */
+.support-link,
+.community-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    font-weight: bold;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.support-link {
+    background-color: #ffcc00;
+    color: #23272a;
+}
+
+.support-link:hover {
+    background-color: #e6b800;
+}
+
+.community-link {
+    background-color: #44b244;
+    color: white;
+}
+
+.community-link:hover {
+    background-color: #3aa13a;
+}
+
+/* ====== ТЕМНАЯ ТЕМА ====== */
+body.dark-theme {
+    background-color: #23272a;
+    color: #e0e0e0;
+}
+
+/* Темная тема для контейнера */
+body.dark-theme .about-container {
+    background: #2c2f33;
+    color: #e0e0e0;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Темная тема заголовков */
+body.dark-theme .about-container h1 {
+    color: #ffffff;
+}
+
+body.dark-theme .about-container h3 {
+    color: #99aab5;
+}
+
+/* Темная тема для текста */
+body.dark-theme .about-container p {
+    color: #e0e0e0;
+}
+
+/* Темные стили для ссылок */
+body.dark-theme .support-link {
+    background-color: #ffcc00;
+    color: #23272a;
+}
+
+body.dark-theme .support-link:hover {
+    background-color: #e6b800;
+}
+
+body.dark-theme .community-link {
+    background-color: #44b244;
+    color: white;
+}
+
+body.dark-theme .community-link:hover {
+    background-color: #3aa13a;
 }

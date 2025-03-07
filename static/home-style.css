@@ -1,85 +1,148 @@
+/* ====== Загальні стилі ====== */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa; /* Сохранение светлого фона для тела страницы */
+    background-color: #f8f9fa;
+    color: #23272a;
+    transition: background 0.3s ease, color 0.3s ease;
+    overflow: hidden;
 }
 
-/* Стили для боковой панели */
+/* Темна тема */
+body.dark-theme {
+    background-color: #2c2f33;
+    color: #e0e0e0;
+}
+
+/* ====== Sidebar ====== */
 .sidebar {
-    height: 100vh;
+    height: 85vh;
     position: sticky;
-    top: 0;
-    background-color: #572d2d; /* Белый фон для боковой панели */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень для боковой панели */
-    border-radius: 8px; /* Скругленные углы для боковой панели */
-    padding: 20px;
+    top: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    overflow-y: auto;
 }
 
-.sidebar h3 {
-    font-size: 1.5em;
-    color: #626cd6; /* Цвет текста заголовка */
+/* Темна тема sidebar */
+body.dark-theme .sidebar {
+    background-color: #23272a;
+    color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Заголовок sidebar */
+.sidebar-title {
+    font-size: 1.3em;
+    color: #626cd6;
     font-weight: bold;
-    margin-bottom: 20px;
-}
-
-/* Кнопки боковой панели */
-.sidebar .btn-outline-primary {
-    background-color: #626cd6; /* Цвет кнопки */
-    color: white;
-    border-radius: 5px;
-    padding: 10px 20px;
     text-align: center;
-    transition: background-color 0.3s ease;
 }
 
-.sidebar .btn-outline-primary:hover {
-    background-color: #4d57b6; /* Цвет кнопки при наведении */
-    color: white;
+/* Темна тема заголовку */
+body.dark-theme .sidebar-title {
+    color: #99aab5;
 }
 
-/* Заголовок модального окна для добавления таблицы */
-.modal-header {
-    background-color: #626cd6;
-    color: white;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+/* ====== Список таблиць ====== */
+.list-group-item {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
 }
 
-/* Стиль для основного содержимого страницы */
-main {
-    background-color: #ffffff; /* Белый фон */
-    border-radius: 8px; /* Скругленные углы */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Тень */
+/* Темна тема списку таблиць */
+body.dark-theme .list-group-item {
+    background-color: #2c2f33;
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+/* Посилання у списку */
+.table-link {
+    color: inherit;
+    text-decoration: none;
+    flex-grow: 1;
+    padding-right: 10px;
+}
+
+body.dark-theme .table-link {
+    color: #ffffff;
+}
+
+/* ====== Кнопка видалення ====== */
+.delete-btn {
+    border: none;
+    background: transparent;
+    color: #dc3545;
+    font-size: 1rem;
+    transition: color 0.3s ease-in-out;
+}
+
+.delete-btn:hover {
+    color: #a71d2a;
+}
+
+/* Темна тема для кнопки видалення */
+body.dark-theme .delete-btn {
+    color: #e74c3c;
+}
+
+body.dark-theme .delete-btn:hover {
+    color: #c0392b;
+}
+
+/* ====== Основний вміст ====== */
+.main-content {
+    height: 85vh;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 30px;
-    margin-top: 20px;
+    margin: auto;
 }
 
-/* Кнопка для добавления таблицы */
-.btn-add-transaction {
-    background-color: #52b35a;
-    color: white;
+/* Темна тема для основного вмісту */
+body.dark-theme .main-content {
+    background-color: #23272a;
+    color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* ====== Заголовок сторінки ====== */
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #23272a;
+}
+
+/* Темна тема для заголовка */
+body.dark-theme h1 {
+    color: #ffffff;
+}
+
+/* ====== Кнопки ====== */
+.btn-success {
+    background-color: #198754;
     border-radius: 5px;
     padding: 10px 15px;
-    display: inline-block;
-    font-size: 1.1em;
-    text-align: center;
-    margin-top: 10px;
+    transition: background 0.3s ease;
 }
 
-.btn-add-transaction {
-    background-color: #198754 !important; /* Зеленый цвет по умолчанию */
-    border-color: #146c43 !important; /* Зеленая граница */
-    color: white !important; /* Белый цвет текста */
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px 20px;
-    border-radius: 5px;
-    text-align: center;
-    transition: background-color 0.3s, color 0.3s;
+.btn-success:hover {
+    background-color: #156f42;
 }
 
-/* Стили для состояния наведения */
-.btn-add-transaction:hover {
-    background-color: #146c43 !important; /* Темно-зеленый цвет при наведении */
-    color: white !important; /* Белый текст при наведении */
+/* Темна тема для кнопок */
+body.dark-theme .btn-success {
+    background-color: #198754;
 }
 
+body.dark-theme .btn-success:hover {
+    background-color: #156f42;
+}

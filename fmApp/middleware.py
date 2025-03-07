@@ -3,6 +3,7 @@ import re
 from django.conf import settings
 from django.shortcuts import redirect
 from django.utils.translation import activate
+from django.utils.deprecation import MiddlewareMixin
 
 
 class LoginRequiredMiddleware:
@@ -43,3 +44,11 @@ class LanguageMiddleware:
 
         response = self.get_response(request)
         return response
+
+
+class ThemeMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        if request.user.is_authenticated:
+            request.session["theme"] = request.user.theme
+        else:
+            request.session["theme"] = "light"
